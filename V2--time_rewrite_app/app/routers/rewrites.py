@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..db import SessionLocal
-from ..deps import get_current_user
+from ..deps import get_current_user, check_client_access
 from ..llm import call_ollama
 from ..models import (
     Client,
@@ -83,6 +83,13 @@ async def rewrite_and_save(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Client not found",
+        )
+
+    # Check if user has permission to access this client
+    if not check_client_access(current_user, payload.client_id, db):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"You do not have permission to access client {client.name}",
         )
 
     # Base rules from demo config

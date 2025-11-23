@@ -23,6 +23,26 @@ class User(Base):
     role = Column(String, nullable=False, default="user")  # "user" or "admin"
     is_active = Column(Boolean, default=True)
 
+    # Relationship to client permissions
+    client_permissions = relationship("UserClientPermission", back_populates="user", cascade="all, delete-orphan")
+
+
+class UserClientPermission(Base):
+    """
+    Many-to-many relationship between users and clients.
+    Determines which clients a user can access.
+    Admins bypass this check and have access to all clients.
+    """
+    __tablename__ = "user_client_permissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    client_id = Column(String, ForeignKey("clients.id"), nullable=False)
+
+    # Relationships
+    user = relationship("User", back_populates="client_permissions")
+    client = relationship("Client")
+
 
 class Client(Base):
     __tablename__ = "clients"

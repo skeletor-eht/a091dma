@@ -37,6 +37,29 @@ class UserOut(UserBase):
         from_attributes = True
 
 
+class UserWithPermissions(UserOut):
+    """User with list of permitted client IDs."""
+    permitted_client_ids: List[str] = []
+
+
+class UserUpdate(BaseModel):
+    """Update user details (admin only)."""
+    username: Optional[str] = None
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class PasswordReset(BaseModel):
+    """Reset user password (admin only)."""
+    new_password: str
+
+
+class UserClientPermissionCreate(BaseModel):
+    """Assign client permission to user."""
+    user_id: int
+    client_id: str
+
+
 # --------- Clients ---------
 
 
