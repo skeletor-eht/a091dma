@@ -747,6 +747,26 @@
       color: var(--accent);
     }
 
+    .badge-primary {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--accent);
+    }
+
+    .badge-secondary {
+      background: rgba(107, 114, 128, 0.1);
+      color: var(--text-muted);
+    }
+
+    .badge-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+    }
+
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+
     /* ========== RESPONSIVE ========== */
 
     @media (max-width: 1024px) {
@@ -861,6 +881,10 @@
             <div id="navClients" class="nav-item">
               <span class="nav-icon">👥</span>
               <span>Clients</span>
+            </div>
+            <div id="navUsers" class="nav-item">
+              <span class="nav-icon">👤</span>
+              <span>Users</span>
             </div>
           </div>
 
@@ -1221,6 +1245,84 @@
               </div>
             </div>
           </section>
+
+          <!-- ========== USER MANAGEMENT VIEW ========== -->
+          <section id="viewUsers" class="view">
+            <div class="page-header">
+              <h1 class="page-title">User Management</h1>
+              <p class="page-subtitle">Manage user accounts and client permissions</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 500px 1fr; gap: 24px;">
+              <!-- User List -->
+              <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                  <h3 class="card-title" style="margin: 0;">Users</h3>
+                  <button id="adminUserNewBtn" class="btn btn-primary" style="width: auto; padding: 8px 16px;">
+                    New User
+                  </button>
+                </div>
+
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Username</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminUserTableBody">
+                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- User Details -->
+              <div class="card">
+                <h3 class="card-title">User Details</h3>
+
+                <input type="hidden" id="adminUserId">
+
+                <label>Username</label>
+                <input id="adminUserUsername" placeholder="Username">
+
+                <label>Password (for new users only)</label>
+                <input type="password" id="adminUserPassword" placeholder="Leave blank to keep existing">
+
+                <label>Role</label>
+                <select id="adminUserRole">
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="adminUserActive" checked>
+                  <span>Account Active</span>
+                </label>
+
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-soft);">
+
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Client Permissions</h4>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                  Select which clients this user can access. Admins have access to all clients.
+                </p>
+
+                <div id="adminUserPermissionsContainer" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border-soft); border-radius: 6px; padding: 12px;">
+                  <div style="color: var(--text-muted); text-align: center;">Select a user to manage permissions</div>
+                </div>
+
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-soft);">
+
+                <div class="btn-group">
+                  <button id="adminUserSaveBtn" class="btn btn-primary">Save User</button>
+                  <button id="adminUserResetPasswordBtn" class="btn btn-secondary">Reset Password</button>
+                  <button id="adminUserDeleteBtn" class="btn btn-danger">Delete</button>
+                </div>
+
+                <div id="adminUserStatus" class="status-message"></div>
+              </div>
+            </div>
+          </section>
         </main>
       </div>
     </div>
@@ -1276,6 +1378,7 @@
         rewrite: { view: "viewRewrite", nav: "navRewrite" },
         audit: { view: "viewAudit", nav: "navAudit" },
         clients: { view: "viewClients", nav: "navClients" },
+        users: { view: "viewUsers", nav: "navUsers" },
       };
 
       const target = viewMap[viewName];
@@ -2070,6 +2173,292 @@
       }
     }
 
+    // ========== USER MANAGEMENT FUNCTIONS ==========
+
+    let allClients = []; // Store all clients for permission checkboxes
+
+    async function loadAdminUsers() {
+      if (!authToken || userRole !== "admin") return;
+
+      try {
+        // Load users
+        const res = await fetch(`${API_BASE}/admin/users-with-permissions`, {
+          method: "GET",
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const users = await res.json();
+
+        const tbody = document.getElementById("adminUserTableBody");
+        if (!users || users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No users found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = users.map(user => `
+          <tr style="cursor: pointer;" onclick="selectUser(${user.id})">
+            <td>${user.username}</td>
+            <td><span class="badge ${user.role === 'admin' ? 'badge-primary' : 'badge-secondary'}">${user.role}</span></td>
+            <td><span class="badge ${user.is_active ? 'badge-success' : 'badge-danger'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
+          </tr>
+        `).join('');
+
+        // Load all clients for permission checkboxes
+        const clientsRes = await fetch(`${API_BASE}/admin/clients`, {
+          method: "GET",
+          headers: buildAuthHeaders(),
+        });
+
+        if (clientsRes.ok) {
+          allClients = await clientsRes.json();
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById("adminUserTableBody").innerHTML =
+          '<tr><td colspan="3" style="text-align: center; color: var(--danger);">Error loading users</td></tr>';
+      }
+    }
+
+    async function selectUser(userId) {
+      if (!authToken || userRole !== "admin") return;
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/users-with-permissions`, {
+          method: "GET",
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const users = await res.json();
+        const user = users.find(u => u.id === userId);
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        // Fill form
+        document.getElementById("adminUserId").value = user.id;
+        document.getElementById("adminUserUsername").value = user.username;
+        document.getElementById("adminUserPassword").value = "";
+        document.getElementById("adminUserRole").value = user.role;
+        document.getElementById("adminUserActive").checked = user.is_active;
+
+        // Render permission checkboxes
+        renderUserPermissions(user.permitted_client_ids || []);
+
+        document.getElementById("adminUserStatus").textContent = "";
+      } catch (err) {
+        console.error(err);
+        document.getElementById("adminUserStatus").textContent = "Error: " + err.message;
+      }
+    }
+
+    function renderUserPermissions(permittedClientIds) {
+      const container = document.getElementById("adminUserPermissionsContainer");
+
+      if (!allClients || allClients.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); text-align: center;">No clients available</div>';
+        return;
+      }
+
+      container.innerHTML = allClients.map(client => {
+        const checked = permittedClientIds.includes(client.id) ? 'checked' : '';
+        return `
+          <label style="display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer;">
+            <input type="checkbox" class="user-permission-checkbox" data-client-id="${client.id}" ${checked}>
+            <span>${client.name} (${client.id})</span>
+          </label>
+        `;
+      }).join('');
+    }
+
+    function clearUserForm() {
+      document.getElementById("adminUserId").value = "";
+      document.getElementById("adminUserUsername").value = "";
+      document.getElementById("adminUserPassword").value = "";
+      document.getElementById("adminUserRole").value = "user";
+      document.getElementById("adminUserActive").checked = true;
+      document.getElementById("adminUserPermissionsContainer").innerHTML =
+        '<div style="color: var(--text-muted); text-align: center;">Select a user to manage permissions</div>';
+      document.getElementById("adminUserStatus").textContent = "";
+    }
+
+    async function saveUser() {
+      if (!authToken || userRole !== "admin") return;
+
+      const userId = document.getElementById("adminUserId").value.trim();
+      const usernameVal = document.getElementById("adminUserUsername").value.trim();
+      const passwordVal = document.getElementById("adminUserPassword").value.trim();
+      const roleVal = document.getElementById("adminUserRole").value;
+      const isActive = document.getElementById("adminUserActive").checked;
+
+      if (!usernameVal) {
+        document.getElementById("adminUserStatus").textContent = "Username is required.";
+        return;
+      }
+
+      // Get selected client permissions
+      const selectedClientIds = Array.from(
+        document.querySelectorAll(".user-permission-checkbox:checked")
+      ).map(cb => cb.dataset.clientId);
+
+      try {
+        document.getElementById("adminUserStatus").textContent = userId ? "Updating user..." : "Creating user...";
+
+        if (!userId) {
+          // Create new user
+          if (!passwordVal || passwordVal.length < 6) {
+            document.getElementById("adminUserStatus").textContent = "Password must be at least 6 characters.";
+            return;
+          }
+
+          const createRes = await fetch(`${API_BASE}/admin/users`, {
+            method: "POST",
+            headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify({
+              username: usernameVal,
+              password: passwordVal,
+              role: roleVal,
+            }),
+          });
+
+          if (!createRes.ok) {
+            const err = await createRes.json().catch(() => ({}));
+            throw new Error(err.detail || `HTTP ${createRes.status}`);
+          }
+
+          const newUser = await createRes.json();
+
+          // Set permissions
+          await fetch(`${API_BASE}/admin/user-permissions/${newUser.id}/set-all`, {
+            method: "POST",
+            headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify(selectedClientIds),
+          });
+
+          document.getElementById("adminUserStatus").textContent = "User created successfully.";
+        } else {
+          // Update existing user
+          const updateRes = await fetch(`${API_BASE}/admin/users/${userId}`, {
+            method: "PUT",
+            headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify({
+              username: usernameVal,
+              role: roleVal,
+              is_active: isActive,
+            }),
+          });
+
+          if (!updateRes.ok) {
+            const err = await updateRes.json().catch(() => ({}));
+            throw new Error(err.detail || `HTTP ${updateRes.status}`);
+          }
+
+          // Set permissions
+          await fetch(`${API_BASE}/admin/user-permissions/${userId}/set-all`, {
+            method: "POST",
+            headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify(selectedClientIds),
+          });
+
+          document.getElementById("adminUserStatus").textContent = "User updated successfully.";
+        }
+
+        clearUserForm();
+        loadAdminUsers();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("adminUserStatus").textContent = "Error: " + err.message;
+      }
+    }
+
+    async function resetUserPassword() {
+      if (!authToken || userRole !== "admin") return;
+
+      const userId = document.getElementById("adminUserId").value.trim();
+      const usernameVal = document.getElementById("adminUserUsername").value.trim();
+
+      if (!userId) {
+        document.getElementById("adminUserStatus").textContent = "Select a user to reset password.";
+        return;
+      }
+
+      const newPassword = prompt(`Enter new password for ${usernameVal} (min 6 characters):`);
+      if (!newPassword) return;
+
+      if (newPassword.length < 6) {
+        alert("Password must be at least 6 characters.");
+        return;
+      }
+
+      try {
+        document.getElementById("adminUserStatus").textContent = "Resetting password...";
+
+        const res = await fetch(`${API_BASE}/admin/users/${userId}/reset-password`, {
+          method: "POST",
+          headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ new_password: newPassword }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        document.getElementById("adminUserStatus").textContent = "Password reset successfully.";
+      } catch (err) {
+        console.error(err);
+        document.getElementById("adminUserStatus").textContent = "Error: " + err.message;
+      }
+    }
+
+    async function deleteUser() {
+      if (!authToken || userRole !== "admin") return;
+
+      const userId = document.getElementById("adminUserId").value.trim();
+      const usernameVal = document.getElementById("adminUserUsername").value.trim();
+
+      if (!userId) {
+        document.getElementById("adminUserStatus").textContent = "Select a user to delete.";
+        return;
+      }
+
+      if (!confirm(`Delete user "${usernameVal}"? This cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        document.getElementById("adminUserStatus").textContent = "Deleting user...";
+
+        const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
+          method: "DELETE",
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        document.getElementById("adminUserStatus").textContent = "User deleted.";
+        clearUserForm();
+        loadAdminUsers();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("adminUserStatus").textContent = "Error: " + err.message;
+      }
+    }
+
+    // Make selectUser global so it can be called from onclick
+    window.selectUser = selectUser;
+
     // ========== EVENT LISTENERS ==========
 
     document.getElementById("loginBtn").addEventListener("click", login);
@@ -2097,6 +2486,12 @@
       loadAdminClients();
     });
 
+    document.getElementById("navUsers").addEventListener("click", () => {
+      if (userRole !== "admin") return;
+      setActiveView("users");
+      loadAdminUsers();
+    });
+
     // Rewrite
     document.getElementById("runBtn").addEventListener("click", rewriteOnly);
     document.getElementById("saveBtn").addEventListener("click", rewriteAndSave);
@@ -2113,6 +2508,12 @@
     document.getElementById("uploadGuidelinesPdfBtn").addEventListener("click", uploadGuidelinesPdf);
     document.getElementById("uploadSuccessfulPdfBtn").addEventListener("click", uploadSuccessfulPdf);
     document.getElementById("uploadFailedPdfBtn").addEventListener("click", uploadFailedPdf);
+
+    // Users
+    document.getElementById("adminUserNewBtn").addEventListener("click", clearUserForm);
+    document.getElementById("adminUserSaveBtn").addEventListener("click", saveUser);
+    document.getElementById("adminUserResetPasswordBtn").addEventListener("click", resetUserPassword);
+    document.getElementById("adminUserDeleteBtn").addEventListener("click", deleteUser);
 
     // Tabs
     document.querySelectorAll(".tab").forEach(tab => {
