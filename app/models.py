@@ -42,12 +42,16 @@ class Client(Base):
 
 class TimeEntry(Base):
     __tablename__ = "time_entries"
+    __table_args__ = (
+        # Index for querying by client
+        # Index for date-based queries (recent entries)
+    )
 
     id = Column(String, primary_key=True, index=True)
-    client_id = Column(String, ForeignKey("clients.id"), nullable=False)
+    client_id = Column(String, ForeignKey("clients.id"), nullable=False, index=True)
     original = Column(Text, nullable=False)
     hours = Column(Float, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
 
     client = relationship("Client", back_populates="time_entries")
     rewrites = relationship("RewriteRecord", back_populates="time_entry")
@@ -71,10 +75,10 @@ class AuditEvent(Base):
     __tablename__ = "audit_events"
 
     id = Column(String, primary_key=True, index=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
-    username = Column(String, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)  # Index for date queries
+    username = Column(String, nullable=False, index=True)  # Index for user-specific queries
     role = Column(String, nullable=False)
-    client_id = Column(String, ForeignKey("clients.id"), nullable=False)
+    client_id = Column(String, ForeignKey("clients.id"), nullable=False, index=True)  # Index for client queries
     time_entry_id = Column(String, ForeignKey("time_entries.id"), nullable=False)
     rewrite_id = Column(String, ForeignKey("rewrites.id"), nullable=False)
     model_name = Column(String, nullable=False)

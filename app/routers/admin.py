@@ -2,7 +2,7 @@ from typing import List
 import io
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
 from sqlalchemy.orm import Session
 from pypdf import PdfReader
 
@@ -11,6 +11,7 @@ from ..db import SessionLocal
 from ..deps import require_admin
 from ..models import User, AuditEvent, TimeEntry, RewriteRecord, Client
 from ..config import settings
+from ..pagination import paginate, create_paginated_response, PaginatedResponse
 from ..schemas import (
     UserCreate,
     UserOut,
@@ -373,18 +374,24 @@ async def upload_denied_examples_pdf(
 # =========================
 
 
-@router.get("/audit-events", response_model=List[AuditEntryOut])
+@router.get("/audit-events", response_model=PaginatedResponse[AuditEntryOut])
 def audit_events(
-    limit: int = 50,
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     admin=Depends(require_admin),
 ):
-    events = (
-        db.query(AuditEvent)
-        .order_by(AuditEvent.timestamp.desc())
-        .limit(limit)
-        .all()
-    )
+    """
+    Get paginated audit events.
+
+    Parameters:
+    - page: Page number (1-indexed)
+    - page_size: Number of items per page (max 100)
+    """
+    query = db.query(AuditEvent).order_by(AuditEvent.timestamp.desc())
+
+    # Paginate
+    events, total = paginate(query, page=page, page_size=page_size)
 
     results: list[AuditEntryOut] = []
     for ev in events:
@@ -411,4 +418,9 @@ def audit_events(
             )
         )
 
-    return results
+    return create_paginated_response(
+        items=results,
+        total=total,
+        page=page,
+        page_size=page_size
+    )

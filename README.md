@@ -207,6 +207,88 @@ DATABASE_URL="sqlite:///./time_rewrite.db"
 DATABASE_URL="postgresql://user:password@localhost:5432/time_rewrite"
 ```
 
+### Database Migrations (Alembic)
+
+This project uses Alembic for database schema migrations.
+
+#### Initialize Database (First Time)
+```bash
+# The database tables are created automatically on first run
+# But for production, use migrations:
+alembic upgrade head
+```
+
+#### Create a New Migration
+```bash
+# Auto-generate migration from model changes
+alembic revision --autogenerate -m "Description of changes"
+
+# Review the generated migration file in alembic/versions/
+# Then apply it:
+alembic upgrade head
+```
+
+#### Rollback Migration
+```bash
+# Rollback one migration
+alembic downgrade -1
+
+# Rollback to specific revision
+alembic downgrade <revision_id>
+```
+
+#### View Migration History
+```bash
+alembic current  # Show current revision
+alembic history  # Show all revisions
+```
+
+### Database Indexes
+
+The following indexes are automatically created for performance:
+
+**TimeEntry:**
+- `client_id` - Fast lookup by client
+- `created_at` - Efficient date-based queries
+
+**AuditEvent:**
+- `timestamp` - Quick date-range queries
+- `username` - Fast user activity lookups
+- `client_id` - Efficient client filtering
+
+**Clients, Users:**
+- Primary key indexes on `id` and `username`
+
+### Pagination
+
+All list endpoints support pagination to handle large datasets efficiently.
+
+**Parameters:**
+- `page` - Page number (1-indexed, default: 1)
+- `page_size` - Items per page (1-100, default: 20)
+
+**Response Structure:**
+```json
+{
+  "items": [...],
+  "total": 150,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 8,
+  "has_next": true,
+  "has_prev": false
+}
+```
+
+**Example:**
+```bash
+# Get page 2 with 50 items
+GET /admin/audit-events?page=2&page_size=50
+
+# Get recent time entries (first page, 20 items)
+GET /rewrites/recent?page=1&page_size=20
+```
+
 ## Troubleshooting
 
 ### Issue: "CORS policy" errors

@@ -2,12 +2,13 @@ from datetime import datetime
 from typing import List
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from ..db import SessionLocal
 from ..deps import get_current_user
 from ..llm import call_ollama
+from ..pagination import paginate, create_paginated_response, PaginatedResponse
 from ..models import (
     Client,
     TimeEntry,
@@ -154,23 +155,23 @@ async def rewrite_and_save(
     )
 
 
-@router.get("/recent", response_model=List[SavedRewriteResponse])
+@router.get("/recent", response_model=PaginatedResponse[SavedRewriteResponse])
 def recent_time_entries(
-    limit: int = 20,
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
 ):
     """
-    Return the most recent saved time entries with their latest rewrite.
-    """
-    if limit <= 0:
-        limit = 20
+    Return the most recent saved time entries with their latest rewrite (paginated).
 
-    entries = (
-        db.query(TimeEntry)
-        .order_by(TimeEntry.created_at.desc())
-        .limit(limit)
-        .all()
-    )
+    Parameters:
+    - page: Page number (1-indexed)
+    - page_size: Number of items per page (max 100)
+    """
+    query = db.query(TimeEntry).order_by(TimeEntry.created_at.desc())
+
+    # Paginate
+    entries, total = paginate(query, page=page, page_size=page_size)
 
     results: List[SavedRewriteResponse] = []
 
@@ -197,4 +198,9 @@ def recent_time_entries(
             )
         )
 
-    return results
+    return create_paginated_response(
+        items=results,
+        total=total,
+        page=page,
+        page_size=page_size
+    )
