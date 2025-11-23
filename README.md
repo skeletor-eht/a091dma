@@ -77,10 +77,12 @@ uvicorn main:app --reload --port 9001
 
 ### 8. Default Credentials
 
-- **Admin**: `admin` / `admin123`
-- **User**: `demo` / `demo123`
+- **Admin**: `admin` / `Admin123`
+- **User**: `demo` / `Demo123`
 
 ⚠️ **IMPORTANT**: Change these passwords immediately in production!
+
+**Note**: Passwords must contain at least 8 characters with uppercase, lowercase, and numbers.
 
 ## Production Deployment
 

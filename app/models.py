@@ -156,19 +156,19 @@ def seed_demo_clients_and_admin():
             db.add_all(demo_clients)
             db.commit()
 
-        # Seed users: admin/admin123 and demo/demo123
+        # Seed users: admin/Admin123 and demo/Demo123
         from .auth import get_password_hash
 
         if db.query(User).count() == 0:
             admin_user = User(
                 username="admin",
-                password_hash=get_password_hash("admin123"),
+                password_hash=get_password_hash("Admin123"),
                 role="admin",
                 is_active=True,
             )
             demo_user = User(
                 username="demo",
-                password_hash=get_password_hash("demo123"),
+                password_hash=get_password_hash("Demo123"),
                 role="user",
                 is_active=True,
             )
