@@ -32,10 +32,15 @@ class Client(Base):
     code = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    # New fields: where you paste guidelines + examples
+    # Text fields: where you paste guidelines + examples
     billing_guidelines = Column(Text, nullable=True)
     accepted_examples = Column(Text, nullable=True)
     denied_examples = Column(Text, nullable=True)
+
+    # PDF extracted text fields
+    guidelines_pdf_text = Column(Text, nullable=True)
+    successful_examples_pdf_text = Column(Text, nullable=True)
+    failed_examples_pdf_text = Column(Text, nullable=True)
 
     time_entries = relationship("TimeEntry", back_populates="client")
 

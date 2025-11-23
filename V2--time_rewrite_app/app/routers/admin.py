@@ -1,7 +1,9 @@
 from typing import List
+from io import BytesIO
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
+from pypdf import PdfReader
 
 from ..auth import get_password_hash
 from ..db import SessionLocal
@@ -209,3 +211,127 @@ def audit_events(
         )
 
     return results
+
+
+# =========================
+# PDF Upload endpoints
+# =========================
+
+
+def extract_text_from_pdf(pdf_file: bytes) -> str:
+    """
+    Extract text from PDF bytes.
+    """
+    try:
+        pdf_reader = PdfReader(BytesIO(pdf_file))
+        text = ""
+        for page in pdf_reader.pages:
+            text += page.extract_text() + "\n"
+        return text.strip()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to extract text from PDF: {str(e)}"
+        )
+
+
+@router.post("/clients/{client_id}/upload-guidelines-pdf")
+async def upload_guidelines_pdf(
+    client_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    """
+    Upload and extract text from client billing guidelines PDF.
+    """
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only PDF files are allowed"
+        )
+
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    pdf_bytes = await file.read()
+    extracted_text = extract_text_from_pdf(pdf_bytes)
+
+    client.guidelines_pdf_text = extracted_text
+    db.commit()
+    db.refresh(client)
+
+    return {
+        "status": "success",
+        "message": f"Extracted {len(extracted_text)} characters from guidelines PDF",
+        "preview": extracted_text[:200] + "..." if len(extracted_text) > 200 else extracted_text
+    }
+
+
+@router.post("/clients/{client_id}/upload-successful-examples-pdf")
+async def upload_successful_examples_pdf(
+    client_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    """
+    Upload and extract text from successful billing examples PDF.
+    """
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only PDF files are allowed"
+        )
+
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    pdf_bytes = await file.read()
+    extracted_text = extract_text_from_pdf(pdf_bytes)
+
+    client.successful_examples_pdf_text = extracted_text
+    db.commit()
+    db.refresh(client)
+
+    return {
+        "status": "success",
+        "message": f"Extracted {len(extracted_text)} characters from successful examples PDF",
+        "preview": extracted_text[:200] + "..." if len(extracted_text) > 200 else extracted_text
+    }
+
+
+@router.post("/clients/{client_id}/upload-failed-examples-pdf")
+async def upload_failed_examples_pdf(
+    client_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    """
+    Upload and extract text from failed billing examples PDF.
+    """
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only PDF files are allowed"
+        )
+
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    pdf_bytes = await file.read()
+    extracted_text = extract_text_from_pdf(pdf_bytes)
+
+    client.failed_examples_pdf_text = extracted_text
+    db.commit()
+    db.refresh(client)
+
+    return {
+        "status": "success",
+        "message": f"Extracted {len(extracted_text)} characters from failed examples PDF",
+        "preview": extracted_text[:200] + "..." if len(extracted_text) > 200 else extracted_text
+    }

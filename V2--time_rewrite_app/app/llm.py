@@ -78,11 +78,18 @@ STRICT RULES:
 - Do NOT invent work or exaggerate.
 - You may make the language more professional, but the substantive meaning must remain.
 
+IMPORTANT: You may receive client-specific guidelines and examples from uploaded PDFs:
+- "guidelines_from_pdf" contains detailed billing guidelines extracted from PDF documents
+- "successful_examples_from_pdf" contains examples of ACCEPTED billing narratives - use these as models
+- "failed_examples_from_pdf" contains examples of REJECTED billing narratives - avoid these patterns
+
+When PDF content is provided, prioritize it as it represents the most detailed client requirements.
+
 You MUST respond in JSON ONLY with this exact structure:
 
 {
   "standard": "<cleaned version of the narrative>",
-  "client_compliant": "<version tuned to client rules>",
+  "client_compliant": "<version tuned to client rules and PDF examples>",
   "audit_safe": "<version that is extra clear and defensible in audits>",
   "notes": "<brief explanation of what you changed and why>"
 }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>RICOCHET 360 - Legal Billing</title>
+  <title>ai.mdwcg - Legal Billing</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root {
@@ -784,8 +784,8 @@
     <div id="loginScreen">
       <div class="login-card">
         <div class="login-brand">
-          <div class="login-logo">R360</div>
-          <div class="login-title">RICOCHET 360</div>
+          <div class="login-logo">AI</div>
+          <div class="login-title">ai.mdwcg</div>
           <div class="login-subtitle">Legal Billing & Time Entry Management</div>
         </div>
 
@@ -818,9 +818,9 @@
       <!-- Header -->
       <div class="app-header">
         <div class="app-header-left">
-          <div class="app-logo">R360</div>
+          <div class="app-logo">AI</div>
           <div>
-            <div class="app-title">RICOCHET 360</div>
+            <div class="app-title">ai.mdwcg</div>
             <div class="app-title-sub">Legal Billing Platform</div>
           </div>
         </div>
@@ -1184,6 +1184,33 @@
 
                 <label>Denied Examples</label>
                 <textarea id="adminClientDenied" rows="3" placeholder="Line-separated denied examples..."></textarea>
+
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-soft);">
+
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Upload PDFs (Optional)</h4>
+
+                <label>Guidelines PDF</label>
+                <input type="file" id="guidelinesPdf" accept=".pdf" style="padding: 8px;">
+                <button id="uploadGuidelinesPdfBtn" class="btn btn-secondary" style="margin-top: 8px; width: auto; padding: 8px 16px;">
+                  Upload Guidelines PDF
+                </button>
+                <div id="guidelinesPdfStatus" class="status-message"></div>
+
+                <label>Successful Examples PDF</label>
+                <input type="file" id="successfulPdf" accept=".pdf" style="padding: 8px;">
+                <button id="uploadSuccessfulPdfBtn" class="btn btn-secondary" style="margin-top: 8px; width: auto; padding: 8px 16px;">
+                  Upload Successful Examples PDF
+                </button>
+                <div id="successfulPdfStatus" class="status-message"></div>
+
+                <label>Failed Examples PDF</label>
+                <input type="file" id="failedPdf" accept=".pdf" style="padding: 8px;">
+                <button id="uploadFailedPdfBtn" class="btn btn-secondary" style="margin-top: 8px; width: auto; padding: 8px 16px;">
+                  Upload Failed Examples PDF
+                </button>
+                <div id="failedPdfStatus" class="status-message"></div>
+
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-soft);">
 
                 <div class="btn-group">
                   <button id="adminClientSaveBtn" class="btn btn-primary">Save Client</button>
@@ -1909,6 +1936,140 @@
       }
     }
 
+    // ========== PDF UPLOAD FUNCTIONS ==========
+
+    async function uploadGuidelinesPdf() {
+      if (!authToken || userRole !== "admin") return;
+
+      const id = document.getElementById("adminClientId").value.trim();
+      if (!id) {
+        document.getElementById("guidelinesPdfStatus").textContent = "Please select a client first.";
+        return;
+      }
+
+      const fileInput = document.getElementById("guidelinesPdf");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        document.getElementById("guidelinesPdfStatus").textContent = "Please select a PDF file.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        document.getElementById("guidelinesPdfStatus").textContent = "Uploading...";
+
+        const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(id)}/upload-guidelines-pdf`, {
+          method: "POST",
+          headers: buildAuthHeaders(),
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        document.getElementById("guidelinesPdfStatus").textContent = data.message;
+        fileInput.value = "";
+        loadAdminClients();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("guidelinesPdfStatus").textContent = "Error: " + err.message;
+      }
+    }
+
+    async function uploadSuccessfulPdf() {
+      if (!authToken || userRole !== "admin") return;
+
+      const id = document.getElementById("adminClientId").value.trim();
+      if (!id) {
+        document.getElementById("successfulPdfStatus").textContent = "Please select a client first.";
+        return;
+      }
+
+      const fileInput = document.getElementById("successfulPdf");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        document.getElementById("successfulPdfStatus").textContent = "Please select a PDF file.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        document.getElementById("successfulPdfStatus").textContent = "Uploading...";
+
+        const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(id)}/upload-successful-examples-pdf`, {
+          method: "POST",
+          headers: buildAuthHeaders(),
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        document.getElementById("successfulPdfStatus").textContent = data.message;
+        fileInput.value = "";
+        loadAdminClients();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("successfulPdfStatus").textContent = "Error: " + err.message;
+      }
+    }
+
+    async function uploadFailedPdf() {
+      if (!authToken || userRole !== "admin") return;
+
+      const id = document.getElementById("adminClientId").value.trim();
+      if (!id) {
+        document.getElementById("failedPdfStatus").textContent = "Please select a client first.";
+        return;
+      }
+
+      const fileInput = document.getElementById("failedPdf");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        document.getElementById("failedPdfStatus").textContent = "Please select a PDF file.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        document.getElementById("failedPdfStatus").textContent = "Uploading...";
+
+        const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(id)}/upload-failed-examples-pdf`, {
+          method: "POST",
+          headers: buildAuthHeaders(),
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        document.getElementById("failedPdfStatus").textContent = data.message;
+        fileInput.value = "";
+        loadAdminClients();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("failedPdfStatus").textContent = "Error: " + err.message;
+      }
+    }
+
     // ========== EVENT LISTENERS ==========
 
     document.getElementById("loginBtn").addEventListener("click", login);
@@ -1947,6 +2108,11 @@
     document.getElementById("adminClientNewBtn").addEventListener("click", clearClientForm);
     document.getElementById("adminClientSaveBtn").addEventListener("click", saveClient);
     document.getElementById("adminClientDeleteBtn").addEventListener("click", deleteClient);
+
+    // PDF Uploads
+    document.getElementById("uploadGuidelinesPdfBtn").addEventListener("click", uploadGuidelinesPdf);
+    document.getElementById("uploadSuccessfulPdfBtn").addEventListener("click", uploadSuccessfulPdf);
+    document.getElementById("uploadFailedPdfBtn").addEventListener("click", uploadFailedPdf);
 
     // Tabs
     document.querySelectorAll(".tab").forEach(tab => {

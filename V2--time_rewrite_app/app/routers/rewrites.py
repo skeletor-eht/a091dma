@@ -96,6 +96,14 @@ async def rewrite_and_save(
     if client.denied_examples:
         base_rules["denied_examples"] = client.denied_examples
 
+    # Add PDF-extracted content for enhanced accuracy
+    if client.guidelines_pdf_text:
+        base_rules["guidelines_from_pdf"] = client.guidelines_pdf_text
+    if client.successful_examples_pdf_text:
+        base_rules["successful_examples_from_pdf"] = client.successful_examples_pdf_text
+    if client.failed_examples_pdf_text:
+        base_rules["failed_examples_from_pdf"] = client.failed_examples_pdf_text
+
     rewrite = await call_ollama(
         original=payload.original,
         hours=payload.hours,

@@ -70,6 +70,9 @@ class ClientAdminDetail(ClientOut):
     billing_guidelines: Optional[str] = None
     accepted_examples: Optional[str] = None
     denied_examples: Optional[str] = None
+    guidelines_pdf_text: Optional[str] = None
+    successful_examples_pdf_text: Optional[str] = None
+    failed_examples_pdf_text: Optional[str] = None
 
 
 # --------- Rewrite + Audit ---------
