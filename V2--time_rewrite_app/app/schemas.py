@@ -140,3 +140,82 @@ class AuditEntryOut(BaseModel):
     client_compliant: str
     audit_safe: str
     notes: str
+
+
+# --------- Bulk Operations ---------
+
+
+class BatchOperationOut(BaseModel):
+    id: str
+    operation_type: str
+    filename: str
+    total_rows: int
+    successful_rows: int
+    failed_rows: int
+    status: str
+    error_log: Optional[str] = None
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CSVImportRow(BaseModel):
+    """Single row from CSV import"""
+    client_id: str
+    original: str
+    hours: float
+
+
+# --------- History ---------
+
+
+class RewriteVersionOut(BaseModel):
+    id: str
+    version_number: int
+    standard: str
+    client_compliant: str
+    audit_safe: str
+    notes: Optional[str] = None
+    created_by: str
+    created_at: datetime
+    is_current: bool
+
+    class Config:
+        from_attributes = True
+
+
+# --------- Templates ---------
+
+
+class TemplateCreate(BaseModel):
+    client_id: Optional[str] = None
+    name: str
+    template_type: str  # "phrase" or "full_rewrite"
+    original_text: Optional[str] = None
+    rewrite_text: str
+    category: Optional[str] = None
+
+
+class TemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    rewrite_text: Optional[str] = None
+    category: Optional[str] = None
+
+
+class TemplateOut(BaseModel):
+    id: str
+    user_id: int
+    client_id: Optional[str] = None
+    name: str
+    template_type: str
+    original_text: Optional[str] = None
+    rewrite_text: str
+    category: Optional[str] = None
+    usage_count: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -7,6 +7,8 @@ from app.routers import clients as clients_router
 from app.routers import rewrites as rewrites_router
 from app.routers import admin as admin_router
 from app.routers import analytics as analytics_router
+from app.routers import bulk as bulk_router
+from app.routers import history as history_router
 from app.models import seed_demo_clients_and_admin  # ensures demo data
 
 # Create DB tables
@@ -30,6 +32,8 @@ app.include_router(clients_router.router, prefix="/clients", tags=["clients"])
 app.include_router(rewrites_router.router, prefix="/rewrites", tags=["rewrites"])
 app.include_router(admin_router.router, prefix="/admin", tags=["admin"])
 app.include_router(analytics_router.router, prefix="/analytics", tags=["analytics"])
+app.include_router(bulk_router.router, prefix="/bulk", tags=["bulk"])
+app.include_router(history_router.router, prefix="/history", tags=["history"])
 
 @app.get("/health")
 def health():

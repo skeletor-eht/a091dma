@@ -13,6 +13,7 @@ from ..models import (
     TimeEntry,
     RewriteRecord,
     AuditEvent,
+    RewriteVersion,
     DEMO_RULES_BY_CLIENT_ID,
 )
 from ..schemas import (
@@ -145,6 +146,34 @@ async def rewrite_and_save(
     db.add(rw)
     db.commit()
     db.refresh(rw)
+
+    # Save version history
+    # Check how many versions exist for this time entry
+    existing_versions = db.query(RewriteVersion).filter(
+        RewriteVersion.time_entry_id == time_entry_id
+    ).count()
+
+    version = RewriteVersion(
+        id=f"RV-{now_ts}",
+        time_entry_id=time_entry_id,
+        version_number=existing_versions + 1,
+        standard=rewrite.standard,
+        client_compliant=rewrite.client_compliant,
+        audit_safe=rewrite.audit_safe,
+        notes=rewrite.notes,
+        created_by=current_user.username,
+        is_current=True,
+    )
+    db.add(version)
+
+    # Mark all previous versions as not current
+    if existing_versions > 0:
+        db.query(RewriteVersion).filter(
+            RewriteVersion.time_entry_id == time_entry_id,
+            RewriteVersion.id != version.id
+        ).update({"is_current": False})
+
+    db.commit()
 
     # AuditEvent
     ae = AuditEvent(

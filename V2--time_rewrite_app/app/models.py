@@ -106,6 +106,56 @@ class AuditEvent(Base):
     rules_snapshot = Column(Text, nullable=False)
 
 
+class BatchOperation(Base):
+    """Track bulk CSV upload/export operations"""
+    __tablename__ = "batch_operations"
+
+    id = Column(String, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    operation_type = Column(String, nullable=False)  # "import" or "export"
+    filename = Column(String, nullable=False)
+    total_rows = Column(Integer, nullable=False)
+    successful_rows = Column(Integer, default=0)
+    failed_rows = Column(Integer, default=0)
+    status = Column(String, default="processing")  # "processing", "completed", "failed"
+    error_log = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)
+
+
+class RewriteVersion(Base):
+    """Track all versions of rewrites for a time entry (history)"""
+    __tablename__ = "rewrite_versions"
+
+    id = Column(String, primary_key=True, index=True)
+    time_entry_id = Column(String, ForeignKey("time_entries.id"), nullable=False)
+    version_number = Column(Integer, nullable=False)
+    standard = Column(Text, nullable=False)
+    client_compliant = Column(Text, nullable=False)
+    audit_safe = Column(Text, nullable=False)
+    notes = Column(Text, nullable=True)
+    created_by = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_current = Column(Boolean, default=True)
+
+
+class Template(Base):
+    """Save favorite rewrites and quick phrases as templates"""
+    __tablename__ = "templates"
+
+    id = Column(String, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    client_id = Column(String, ForeignKey("clients.id"), nullable=True)  # Null = global template
+    name = Column(String, nullable=False)
+    template_type = Column(String, nullable=False)  # "phrase", "full_rewrite"
+    original_text = Column(Text, nullable=True)
+    rewrite_text = Column(Text, nullable=False)
+    category = Column(String, nullable=True)
+    usage_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 # Demo client rules – still here, but we’ll *augment* these with guidelines/examples
 DEMO_RULES_BY_CLIENT_ID = {
     "C001": {
