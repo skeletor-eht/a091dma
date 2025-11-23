@@ -32,6 +32,7 @@
       display: flex;
       align-items: stretch;
       justify-content: center;
+      transition: all 0.3s ease;
     }
 
     .root {
@@ -296,22 +297,30 @@
       font-size: 13px;
       color: #e5e7eb;
       border: 1px solid transparent;
+      transition: all 0.2s ease;
     }
 
     .nav-item span.icon {
       font-size: 14px;
       opacity: 0.95;
+      transition: transform 0.2s ease;
     }
 
     .nav-item:hover {
       background: var(--sidebar-bg-hover);
       border-color: rgba(148, 163, 184, 0.3);
+      transform: translateX(2px);
+    }
+
+    .nav-item:hover span.icon {
+      transform: scale(1.1);
     }
 
     .nav-item.active {
       background: #ffffff;
       color: var(--sidebar-bg);
       border-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .sidebar-footer {
@@ -363,6 +372,12 @@
       border: 1px solid var(--border-soft);
       display: flex;
       flex-direction: column;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: box-shadow 0.2s ease;
+    }
+
+    .pane:hover {
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
     }
 
     .pane-left {
@@ -418,25 +433,42 @@
 
     button {
       background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: #f9fafb;
+      color: #ffffff !important;
       border: none;
       cursor: pointer;
       margin-top: 10px;
       font-weight: 500;
       border-radius: 999px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     button.secondary {
       background: #6b7280;
+      color: #ffffff !important;
     }
 
     button.danger {
       background: var(--danger);
+      color: #ffffff !important;
     }
 
     button.small {
       font-size: 11px;
       padding: 4px 8px;
+      color: #ffffff !important;
+    }
+
+    button.upload-btn {
+      background: #10b981;
+      color: #ffffff !important;
+      font-size: 11px;
+      padding: 4px 8px;
+      margin-top: 4px;
+    }
+
+    button.upload-btn:hover {
+      background: #059669;
     }
 
     button:hover {
@@ -477,14 +509,21 @@
 
     pre {
       background: #f9fafb;
-      border-radius: 4px;
-      padding: 8px;
+      border-radius: 6px;
+      padding: 10px;
       font-family: "SF Mono", Menlo, Consolas, monospace;
       font-size: 12px;
       white-space: pre-wrap;
       border: 1px solid #e5e7eb;
       min-height: 36px;
       color: #111827;
+      line-height: 1.6;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
+      transition: border-color 0.2s ease;
+    }
+
+    pre:not(:empty):hover {
+      border-color: var(--accent);
     }
 
     .grid-bottom {
@@ -504,14 +543,26 @@
 
     th, td {
       border: 1px solid #e5e7eb;
-      padding: 4px 6px;
+      padding: 6px 8px;
       text-align: left;
       vertical-align: top;
+    }
+
+    tbody tr {
+      transition: background-color 0.15s ease;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
     }
 
     th {
       background: #f9fafb;
       font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #64748b;
     }
 
     .section-title {
@@ -559,6 +610,66 @@
 
     .table-scroll table {
       width: 100%;
+    }
+
+    .upload-section {
+      margin-top: 12px;
+      padding: 10px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+    }
+
+    .upload-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    input[type="file"] {
+      font-size: 11px;
+      padding: 6px;
+      margin-top: 0;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    input[type="file"]::file-selector-button {
+      padding: 4px 10px;
+      margin-right: 8px;
+      border: none;
+      background: #e2e8f0;
+      color: #1e293b;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+      background: #cbd5e1;
+    }
+
+    .upload-hint {
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border-soft);
+      margin: 12px 0;
     }
   </style>
 </head>
@@ -809,17 +920,44 @@
                     <label for="adminClientCode">Client Code</label>
                     <input id="adminClientCode" placeholder="Billing code (optional)">
 
-                    <label for="adminClientGuidelines">Billing Guidelines (paste or summarize)</label>
+                    <label for="adminClientGuidelines">Billing Guidelines</label>
                     <textarea id="adminClientGuidelines" rows="4"
                       placeholder="Paste key billing guidelines or a concise summary here..."></textarea>
+
+                    <div class="upload-section">
+                      <div class="upload-section-title">📄 Upload Guidelines PDF</div>
+                      <div class="file-input-wrapper">
+                        <input type="file" id="guidelinesFileInput" accept=".pdf">
+                      </div>
+                      <button class="upload-btn" id="uploadGuidelinesBtn">Upload & Extract Text</button>
+                      <div class="upload-hint">Upload a PDF to automatically extract and populate guidelines</div>
+                    </div>
 
                     <label for="adminClientAccepted">Accepted Examples (line-separated)</label>
                     <textarea id="adminClientAccepted" rows="3"
                       placeholder="Example: Reviewed and analyzed client correspondence regarding lease dispute and prepared summary.&#10;Example: Drafted motion to compel and supporting memorandum."></textarea>
 
+                    <div class="upload-section">
+                      <div class="upload-section-title">✅ Upload Accepted Examples PDF</div>
+                      <div class="file-input-wrapper">
+                        <input type="file" id="acceptedFileInput" accept=".pdf">
+                      </div>
+                      <button class="upload-btn" id="uploadAcceptedBtn">Upload & Extract Text</button>
+                      <div class="upload-hint">Upload a PDF with successful billing examples</div>
+                    </div>
+
                     <label for="adminClientDenied">Denied Examples (line-separated)</label>
                     <textarea id="adminClientDenied" rows="3"
                       placeholder="Example: emails&#10;Example: work on case"></textarea>
+
+                    <div class="upload-section">
+                      <div class="upload-section-title">❌ Upload Denied Examples PDF</div>
+                      <div class="file-input-wrapper">
+                        <input type="file" id="deniedFileInput" accept=".pdf">
+                      </div>
+                      <button class="upload-btn" id="uploadDeniedBtn">Upload & Extract Text</button>
+                      <div class="upload-hint">Upload a PDF with examples of billing entries to avoid</div>
+                    </div>
 
                     <div class="button-row">
                       <button id="adminClientSaveBtn">Save Client</button>
@@ -1394,6 +1532,80 @@
       }
     }
 
+    // ===== PDF Upload Functions =====
+
+    async function uploadPDF(endpoint, fileInputId, textareaId) {
+      if (!authToken || userRole !== "admin") {
+        adminClientStatus.textContent = "Admin login required.";
+        return;
+      }
+
+      const clientId = adminClientIdInput.value.trim();
+      if (!clientId) {
+        adminClientStatus.textContent = "Please load or create a client first.";
+        return;
+      }
+
+      const fileInput = document.getElementById(fileInputId);
+      const file = fileInput.files[0];
+
+      if (!file) {
+        adminClientStatus.textContent = "Please select a PDF file first.";
+        return;
+      }
+
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        adminClientStatus.textContent = "Please select a PDF file.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        adminClientStatus.textContent = `Uploading ${file.name} and extracting text...`;
+
+        const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(clientId)}/${endpoint}`, {
+          method: 'POST',
+          headers: buildAuthHeaders(),
+          body: formData
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        const textarea = document.getElementById(textareaId);
+
+        // Get the full extracted text from the database by reloading the client
+        const clientRes = await fetch(`${API_BASE}/admin/clients`, {
+          headers: buildAuthHeaders(),
+        });
+
+        if (clientRes.ok) {
+          const clients = await clientRes.json();
+          const updatedClient = clients.find(c => c.id === clientId);
+          if (updatedClient) {
+            if (textareaId === 'adminClientGuidelines') {
+              textarea.value = updatedClient.billing_guidelines || '';
+            } else if (textareaId === 'adminClientAccepted') {
+              textarea.value = updatedClient.accepted_examples || '';
+            } else if (textareaId === 'adminClientDenied') {
+              textarea.value = updatedClient.denied_examples || '';
+            }
+          }
+        }
+
+        adminClientStatus.textContent = data.message || "PDF text extracted successfully!";
+        fileInput.value = ''; // Clear file input
+      } catch (err) {
+        console.error(err);
+        adminClientStatus.textContent = "Error uploading PDF: " + err.message;
+      }
+    }
+
     // ---- Event wiring ----
     loginBtn.addEventListener("click", login);
     runBtn.addEventListener("click", rewriteOnly);
@@ -1421,6 +1633,17 @@
     adminClientNewBtn.addEventListener("click", clearAdminClientForm);
     adminClientSaveBtn.addEventListener("click", saveAdminClient);
     adminClientDeleteBtn.addEventListener("click", deleteAdminClient);
+
+    // PDF Upload event listeners
+    document.getElementById("uploadGuidelinesBtn").addEventListener("click", () => {
+      uploadPDF("upload-guidelines", "guidelinesFileInput", "adminClientGuidelines");
+    });
+    document.getElementById("uploadAcceptedBtn").addEventListener("click", () => {
+      uploadPDF("upload-accepted-examples", "acceptedFileInput", "adminClientAccepted");
+    });
+    document.getElementById("uploadDeniedBtn").addEventListener("click", () => {
+      uploadPDF("upload-denied-examples", "deniedFileInput", "adminClientDenied");
+    });
 
     document.addEventListener("DOMContentLoaded", () => {
       // load after login

@@ -1,7 +1,9 @@
 from typing import List
+import io
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
+from pypdf import PdfReader
 
 from ..auth import get_password_hash
 from ..db import SessionLocal
@@ -163,6 +165,113 @@ def admin_delete_client(
     db.delete(client)
     db.commit()
     return {"status": "deleted"}
+
+
+# =========================
+# PDF Upload endpoints
+# =========================
+
+
+def extract_text_from_pdf(file_content: bytes) -> str:
+    """Extract text from a PDF file."""
+    try:
+        pdf_reader = PdfReader(io.BytesIO(file_content))
+        text_parts = []
+        for page in pdf_reader.pages:
+            text_parts.append(page.extract_text())
+        return "\n\n".join(text_parts)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to extract text from PDF: {str(e)}"
+        )
+
+
+@router.post("/clients/{client_id}/upload-guidelines")
+async def upload_guidelines_pdf(
+    client_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    """Upload a PDF and extract text for billing guidelines."""
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    content = await file.read()
+    extracted_text = extract_text_from_pdf(content)
+
+    client.billing_guidelines = extracted_text
+    db.commit()
+    db.refresh(client)
+
+    return {
+        "status": "success",
+        "message": f"Extracted {len(extracted_text)} characters from {file.filename}",
+        "preview": extracted_text[:500] + "..." if len(extracted_text) > 500 else extracted_text
+    }
+
+
+@router.post("/clients/{client_id}/upload-accepted-examples")
+async def upload_accepted_examples_pdf(
+    client_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    """Upload a PDF and extract text for accepted billing examples."""
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    content = await file.read()
+    extracted_text = extract_text_from_pdf(content)
+
+    client.accepted_examples = extracted_text
+    db.commit()
+    db.refresh(client)
+
+    return {
+        "status": "success",
+        "message": f"Extracted {len(extracted_text)} characters from {file.filename}",
+        "preview": extracted_text[:500] + "..." if len(extracted_text) > 500 else extracted_text
+    }
+
+
+@router.post("/clients/{client_id}/upload-denied-examples")
+async def upload_denied_examples_pdf(
+    client_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    """Upload a PDF and extract text for denied billing examples."""
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    content = await file.read()
+    extracted_text = extract_text_from_pdf(content)
+
+    client.denied_examples = extracted_text
+    db.commit()
+    db.refresh(client)
+
+    return {
+        "status": "success",
+        "message": f"Extracted {len(extracted_text)} characters from {file.filename}",
+        "preview": extracted_text[:500] + "..." if len(extracted_text) > 500 else extracted_text
+    }
 
 
 # =========================

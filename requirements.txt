@@ -6,3 +6,5 @@ sqlalchemy
 passlib[bcrypt]
 python-jose[cryptography]
 bcrypt==3.2.2
+python-multipart
+pypdf
