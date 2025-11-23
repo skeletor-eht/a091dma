@@ -767,6 +767,91 @@
       color: var(--danger);
     }
 
+    /* ========== MODALS ========== */
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 12px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.3s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: var(--bg-soft);
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     /* ========== RESPONSIVE ========== */
 
     @media (max-width: 1024px) {
@@ -1047,6 +1132,19 @@
               <p class="page-subtitle">AI-powered billing narrative optimization</p>
             </div>
 
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+              <button id="showBulkUploadBtn" class="btn btn-primary" style="width: auto; padding: 8px 16px;">
+                📤 Bulk Upload CSV
+              </button>
+              <button id="exportCsvBtn" class="btn btn-secondary" style="width: auto; padding: 8px 16px;">
+                📥 Export to CSV
+              </button>
+              <button id="showTemplatesBtn" class="btn btn-secondary" style="width: auto; padding: 8px 16px;">
+                ⭐ My Templates
+              </button>
+            </div>
+
             <div class="rewrite-grid">
               <!-- Input Panel -->
               <div class="card">
@@ -1116,10 +1214,11 @@
                     <th>Client</th>
                     <th>Standard Rewrite</th>
                     <th>Notes</th>
+                    <th style="width: 120px;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="recentTableBody">
-                  <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No entries yet</td></tr>
+                  <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No entries yet</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1323,6 +1422,124 @@
               </div>
             </div>
           </section>
+
+          <!-- ========== MODALS ========== -->
+
+          <!-- Bulk Upload Modal -->
+          <div id="bulkUploadModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+              <div class="modal-header">
+                <h2>Bulk Upload CSV</h2>
+                <button class="modal-close" onclick="closeBulkUploadModal()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <p style="margin-bottom: 16px; color: var(--text-muted);">
+                  Upload a CSV file with columns: <code>client_id</code>, <code>original</code>, <code>hours</code>
+                </p>
+
+                <div style="border: 2px dashed var(--border-soft); border-radius: 8px; padding: 32px; text-align: center; background: var(--bg-soft); margin-bottom: 16px;">
+                  <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCsvFileSelected()">
+                  <button onclick="document.getElementById('csvFileInput').click()" class="btn btn-primary" style="width: auto; padding: 12px 24px;">
+                    Choose CSV File
+                  </button>
+                  <div id="csvFileName" style="margin-top: 12px; color: var(--text-muted); font-size: 14px;"></div>
+                </div>
+
+                <button id="uploadCsvBtn" class="btn btn-primary" onclick="uploadCsv()" disabled>
+                  Upload and Process
+                </button>
+
+                <div id="bulkUploadStatus" class="status-message" style="margin-top: 16px;"></div>
+
+                <div id="bulkUploadProgress" style="display: none; margin-top: 16px;">
+                  <div style="background: var(--bg-soft); border-radius: 8px; padding: 16px;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">Processing...</div>
+                    <div style="font-size: 14px; color: var(--text-muted);">
+                      <span id="bulkProgressText">Uploading file...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Templates Modal -->
+          <div id="templatesModal" class="modal">
+            <div class="modal-content" style="max-width: 800px;">
+              <div class="modal-header">
+                <h2>My Templates</h2>
+                <button class="modal-close" onclick="closeTemplatesModal()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                  <div style="display: flex; gap: 8px;">
+                    <select id="templateTypeFilter" onchange="loadTemplates()" style="padding: 6px 12px;">
+                      <option value="">All Types</option>
+                      <option value="phrase">Quick Phrases</option>
+                      <option value="full_rewrite">Full Rewrites</option>
+                    </select>
+                    <select id="templateClientFilter" onchange="loadTemplates()" style="padding: 6px 12px;">
+                      <option value="">All Clients</option>
+                    </select>
+                  </div>
+                  <button class="btn btn-primary" onclick="showCreateTemplate()" style="width: auto; padding: 8px 16px;">
+                    + New Template
+                  </button>
+                </div>
+
+                <div id="templatesList" style="max-height: 400px; overflow-y: auto;">
+                  <div style="text-align: center; color: var(--text-muted); padding: 32px;">Loading templates...</div>
+                </div>
+
+                <div id="createTemplateForm" style="display: none; margin-top: 16px; border-top: 1px solid var(--border-soft); padding-top: 16px;">
+                  <h3 style="font-size: 16px; margin-bottom: 12px;">Create New Template</h3>
+
+                  <label>Template Name</label>
+                  <input id="newTemplateName" placeholder="e.g., Client Meeting - Discovery">
+
+                  <label>Type</label>
+                  <select id="newTemplateType">
+                    <option value="phrase">Quick Phrase</option>
+                    <option value="full_rewrite">Full Rewrite</option>
+                  </select>
+
+                  <label>Client (optional - leave blank for global)</label>
+                  <select id="newTemplateClient">
+                    <option value="">Global (all clients)</option>
+                  </select>
+
+                  <label>Template Text</label>
+                  <textarea id="newTemplateText" rows="4" placeholder="Enter the rewrite text..."></textarea>
+
+                  <label>Category (optional)</label>
+                  <input id="newTemplateCategory" placeholder="e.g., Meetings, Research, Drafting">
+
+                  <div class="btn-group">
+                    <button class="btn btn-primary" onclick="createTemplate()">Save Template</button>
+                    <button class="btn btn-secondary" onclick="hideCreateTemplate()">Cancel</button>
+                  </div>
+
+                  <div id="createTemplateStatus" class="status-message"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- History Modal -->
+          <div id="historyModal" class="modal">
+            <div class="modal-content" style="max-width: 900px;">
+              <div class="modal-header">
+                <h2>Version History</h2>
+                <button class="modal-close" onclick="closeHistoryModal()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div id="historyVersionsList">
+                  <div style="text-align: center; color: var(--text-muted); padding: 32px;">Loading history...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </main>
       </div>
     </div>
@@ -1785,7 +2002,7 @@
         tbody.innerHTML = "";
 
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No saved entries yet</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No saved entries yet</td></tr>';
           return;
         }
 
@@ -1795,6 +2012,11 @@
             <td>${row.client.name}</td>
             <td>${row.rewrite.standard || ""}</td>
             <td>${row.rewrite.notes || ""}</td>
+            <td>
+              <button class="btn btn-secondary" onclick="showHistoryModal('${row.time_entry_id}')" style="width: auto; padding: 4px 10px; font-size: 13px;">
+                📜 History
+              </button>
+            </td>
           `;
           tbody.appendChild(tr);
         });
@@ -2559,6 +2781,464 @@
     // Make selectUser global so it can be called from onclick
     window.selectUser = selectUser;
 
+    // ========== BULK OPERATIONS ==========
+
+    let selectedCsvFile = null;
+
+    function showBulkUploadModal() {
+      document.getElementById("bulkUploadModal").classList.add("active");
+      selectedCsvFile = null;
+      document.getElementById("csvFileName").textContent = "";
+      document.getElementById("uploadCsvBtn").disabled = true;
+      document.getElementById("bulkUploadStatus").textContent = "";
+      document.getElementById("bulkUploadProgress").style.display = "none";
+    }
+
+    function closeBulkUploadModal() {
+      document.getElementById("bulkUploadModal").classList.remove("active");
+    }
+
+    function handleCsvFileSelected() {
+      const fileInput = document.getElementById("csvFileInput");
+      const file = fileInput.files[0];
+
+      if (file) {
+        selectedCsvFile = file;
+        document.getElementById("csvFileName").textContent = `Selected: ${file.name}`;
+        document.getElementById("uploadCsvBtn").disabled = false;
+        document.getElementById("bulkUploadStatus").textContent = "";
+      }
+    }
+
+    async function uploadCsv() {
+      if (!selectedCsvFile) return;
+
+      const formData = new FormData();
+      formData.append("file", selectedCsvFile);
+
+      try {
+        document.getElementById("bulkUploadStatus").textContent = "";
+        document.getElementById("bulkUploadProgress").style.display = "block";
+        document.getElementById("bulkProgressText").textContent = "Uploading and processing CSV file...";
+        document.getElementById("uploadCsvBtn").disabled = true;
+
+        const res = await fetch(`${API_BASE}/bulk/import-csv`, {
+          method: "POST",
+          headers: buildAuthHeaders(),
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const result = await res.json();
+
+        document.getElementById("bulkUploadProgress").style.display = "none";
+        document.getElementById("bulkUploadStatus").textContent =
+          `✓ Success! Processed ${result.total_rows} rows: ${result.successful_rows} succeeded, ${result.failed_rows} failed.`;
+
+        if (result.error_log) {
+          document.getElementById("bulkUploadStatus").textContent += `\n\nErrors:\n${result.error_log}`;
+        }
+
+        // Refresh recent entries
+        loadRecentEntries();
+
+        // Clear file selection
+        document.getElementById("csvFileInput").value = "";
+        selectedCsvFile = null;
+        document.getElementById("csvFileName").textContent = "";
+        document.getElementById("uploadCsvBtn").disabled = true;
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("bulkUploadProgress").style.display = "none";
+        document.getElementById("bulkUploadStatus").textContent = "Error: " + err.message;
+        document.getElementById("uploadCsvBtn").disabled = false;
+      }
+    }
+
+    async function exportToCsv() {
+      try {
+        const res = await fetch(`${API_BASE}/bulk/export-csv`, {
+          method: "GET",
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        // Get filename from Content-Disposition header
+        const contentDisposition = res.headers.get("Content-Disposition");
+        let filename = "export.csv";
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+
+        // Download the file
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+      } catch (err) {
+        console.error(err);
+        alert("Export failed: " + err.message);
+      }
+    }
+
+    // ========== TEMPLATES ==========
+
+    function showTemplatesModal() {
+      document.getElementById("templatesModal").classList.add("active");
+      loadTemplates();
+      loadTemplateFilters();
+    }
+
+    function closeTemplatesModal() {
+      document.getElementById("templatesModal").classList.remove("active");
+      hideCreateTemplate();
+    }
+
+    function showCreateTemplate() {
+      document.getElementById("createTemplateForm").style.display = "block";
+      document.getElementById("createTemplateStatus").textContent = "";
+    }
+
+    function hideCreateTemplate() {
+      document.getElementById("createTemplateForm").style.display = "none";
+      document.getElementById("newTemplateName").value = "";
+      document.getElementById("newTemplateType").value = "phrase";
+      document.getElementById("newTemplateClient").value = "";
+      document.getElementById("newTemplateText").value = "";
+      document.getElementById("newTemplateCategory").value = "";
+      document.getElementById("createTemplateStatus").textContent = "";
+    }
+
+    async function loadTemplateFilters() {
+      try {
+        // Load clients for filter and create form
+        const res = await fetch(`${API_BASE}/clients/`, {
+          headers: buildAuthHeaders(),
+        });
+
+        if (res.ok) {
+          const clients = await res.json();
+
+          // Populate filter dropdown
+          const filterSelect = document.getElementById("templateClientFilter");
+          filterSelect.innerHTML = '<option value="">All Clients</option>';
+          clients.forEach(client => {
+            const option = document.createElement("option");
+            option.value = client.id;
+            option.textContent = `${client.name} (${client.id})`;
+            filterSelect.appendChild(option);
+          });
+
+          // Populate create form dropdown
+          const createSelect = document.getElementById("newTemplateClient");
+          createSelect.innerHTML = '<option value="">Global (all clients)</option>';
+          clients.forEach(client => {
+            const option = document.createElement("option");
+            option.value = client.id;
+            option.textContent = `${client.name} (${client.id})`;
+            createSelect.appendChild(option);
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load template filters:", err);
+      }
+    }
+
+    async function loadTemplates() {
+      try {
+        const typeFilter = document.getElementById("templateTypeFilter").value;
+        const clientFilter = document.getElementById("templateClientFilter").value;
+
+        let url = `${API_BASE}/history/templates?`;
+        if (typeFilter) url += `template_type=${typeFilter}&`;
+        if (clientFilter) url += `client_id=${clientFilter}&`;
+
+        const res = await fetch(url, {
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const templates = await res.json();
+
+        const container = document.getElementById("templatesList");
+
+        if (!templates || templates.length === 0) {
+          container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 32px;">No templates found. Create one to get started!</div>';
+          return;
+        }
+
+        container.innerHTML = templates.map(t => `
+          <div class="card" style="margin-bottom: 12px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; margin-bottom: 4px;">${t.name}</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+                  ${t.template_type === 'phrase' ? '📝 Quick Phrase' : '📄 Full Rewrite'}
+                  ${t.client_id ? ` • Client: ${t.client_id}` : ' • Global'}
+                  ${t.category ? ` • ${t.category}` : ''}
+                  • Used ${t.usage_count} times
+                </div>
+                <div style="font-size: 14px; background: var(--bg-soft); padding: 12px; border-radius: 6px;">
+                  ${t.rewrite_text}
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-left: 12px;">
+                <button class="btn btn-secondary" onclick="useTemplate('${t.id}', \`${t.rewrite_text.replace(/`/g, '\\`')}\`)" style="width: auto; padding: 6px 12px; font-size: 13px;">
+                  Use
+                </button>
+                <button class="btn btn-danger" onclick="deleteTemplate('${t.id}')" style="width: auto; padding: 6px 12px; font-size: 13px;">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("templatesList").innerHTML =
+          '<div style="text-align: center; color: var(--danger); padding: 32px;">Failed to load templates</div>';
+      }
+    }
+
+    async function createTemplate() {
+      const name = document.getElementById("newTemplateName").value.trim();
+      const templateType = document.getElementById("newTemplateType").value;
+      const clientId = document.getElementById("newTemplateClient").value || null;
+      const text = document.getElementById("newTemplateText").value.trim();
+      const category = document.getElementById("newTemplateCategory").value.trim() || null;
+
+      if (!name || !text) {
+        document.getElementById("createTemplateStatus").textContent = "Name and template text are required.";
+        return;
+      }
+
+      try {
+        document.getElementById("createTemplateStatus").textContent = "Creating template...";
+
+        const res = await fetch(`${API_BASE}/history/templates`, {
+          method: "POST",
+          headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({
+            name,
+            template_type: templateType,
+            client_id: clientId,
+            rewrite_text: text,
+            category,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        document.getElementById("createTemplateStatus").textContent = "✓ Template created successfully!";
+        hideCreateTemplate();
+        loadTemplates();
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("createTemplateStatus").textContent = "Error: " + err.message;
+      }
+    }
+
+    async function useTemplate(templateId, templateText) {
+      // Insert template text into the original narrative field
+      document.getElementById("original").value = templateText;
+
+      // Increment usage count
+      try {
+        await fetch(`${API_BASE}/history/templates/${templateId}/use`, {
+          method: "POST",
+          headers: buildAuthHeaders(),
+        });
+      } catch (err) {
+        console.error("Failed to increment template usage:", err);
+      }
+
+      // Close modal
+      closeTemplatesModal();
+    }
+
+    async function deleteTemplate(templateId) {
+      if (!confirm("Delete this template? This cannot be undone.")) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/history/templates/${templateId}`, {
+          method: "DELETE",
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        loadTemplates();
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete template: " + err.message);
+      }
+    }
+
+    // ========== HISTORY ==========
+
+    let currentTimeEntryId = null;
+
+    async function showHistoryModal(timeEntryId) {
+      currentTimeEntryId = timeEntryId;
+      document.getElementById("historyModal").classList.add("active");
+      await loadVersionHistory(timeEntryId);
+    }
+
+    function closeHistoryModal() {
+      document.getElementById("historyModal").classList.remove("active");
+      currentTimeEntryId = null;
+    }
+
+    async function loadVersionHistory(timeEntryId) {
+      try {
+        const res = await fetch(`${API_BASE}/history/versions/${timeEntryId}`, {
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const versions = await res.json();
+
+        const container = document.getElementById("historyVersionsList");
+
+        if (!versions || versions.length === 0) {
+          container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 32px;">No version history found</div>';
+          return;
+        }
+
+        container.innerHTML = versions.map(v => `
+          <div class="card" style="margin-bottom: 16px; padding: 16px; ${v.is_current ? 'border: 2px solid var(--accent);' : ''}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div>
+                <span style="font-weight: 600;">Version ${v.version_number}</span>
+                ${v.is_current ? '<span class="badge badge-primary" style="margin-left: 8px;">Current</span>' : ''}
+                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                  By ${v.created_by} • ${new Date(v.created_at).toLocaleString()}
+                </div>
+              </div>
+              ${!v.is_current ? `
+                <button class="btn btn-secondary" onclick="restoreVersion('${v.id}')" style="width: auto; padding: 6px 12px; font-size: 13px;">
+                  Restore
+                </button>
+              ` : ''}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+              <div>
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Standard</div>
+                <div style="font-size: 13px; background: var(--bg-soft); padding: 8px; border-radius: 4px;">
+                  ${v.standard}
+                </div>
+              </div>
+              <div>
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Client-Compliant</div>
+                <div style="font-size: 13px; background: var(--bg-soft); padding: 8px; border-radius: 4px;">
+                  ${v.client_compliant}
+                </div>
+              </div>
+              <div>
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Audit-Safe</div>
+                <div style="font-size: 13px; background: var(--bg-soft); padding: 8px; border-radius: 4px;">
+                  ${v.audit_safe}
+                </div>
+              </div>
+            </div>
+
+            ${v.notes ? `
+              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-soft);">
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Notes</div>
+                <div style="font-size: 13px;">${v.notes}</div>
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("historyVersionsList").innerHTML =
+          '<div style="text-align: center; color: var(--danger); padding: 32px;">Failed to load version history</div>';
+      }
+    }
+
+    async function restoreVersion(versionId) {
+      if (!confirm("Restore this version? This will create a new version based on the selected one.")) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/history/versions/${currentTimeEntryId}/restore/${versionId}`, {
+          method: "POST",
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const result = await res.json();
+        alert(result.message);
+
+        // Reload history
+        await loadVersionHistory(currentTimeEntryId);
+
+        // Refresh recent entries
+        loadRecentEntries();
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to restore version: " + err.message);
+      }
+    }
+
+    // Make functions global so they can be called from onclick
+    window.handleCsvFileSelected = handleCsvFileSelected;
+    window.uploadCsv = uploadCsv;
+    window.closeBulkUploadModal = closeBulkUploadModal;
+    window.closeTemplatesModal = closeTemplatesModal;
+    window.showCreateTemplate = showCreateTemplate;
+    window.hideCreateTemplate = hideCreateTemplate;
+    window.createTemplate = createTemplate;
+    window.useTemplate = useTemplate;
+    window.deleteTemplate = deleteTemplate;
+    window.showHistoryModal = showHistoryModal;
+    window.closeHistoryModal = closeHistoryModal;
+    window.restoreVersion = restoreVersion;
+
     // ========== EVENT LISTENERS ==========
 
     document.getElementById("loginBtn").addEventListener("click", login);
@@ -2595,6 +3275,11 @@
     // Rewrite
     document.getElementById("runBtn").addEventListener("click", rewriteOnly);
     document.getElementById("saveBtn").addEventListener("click", rewriteAndSave);
+
+    // Bulk Operations & Templates
+    document.getElementById("showBulkUploadBtn").addEventListener("click", showBulkUploadModal);
+    document.getElementById("exportCsvBtn").addEventListener("click", exportToCsv);
+    document.getElementById("showTemplatesBtn").addEventListener("click", showTemplatesModal);
 
     // Audit
     document.getElementById("loadAuditBtn").addEventListener("click", loadAudit);
