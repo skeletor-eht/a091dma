@@ -1278,7 +1278,7 @@
               </div>
 
               <!-- User Details -->
-              <div class="card">
+              <div id="userDetailsCard" class="card" style="display: none;">
                 <h3 class="card-title">User Details</h3>
 
                 <input type="hidden" id="adminUserId">
@@ -1364,6 +1364,12 @@
       authToken = null;
       userRole = null;
       username = null;
+
+      // Clear localStorage
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("username");
+
       document.getElementById("appScreen").style.display = "none";
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("adminNav").style.display = "none";
@@ -1392,6 +1398,64 @@
 
     // ========== LOGIN ==========
 
+    async function restoreSession() {
+      // Check if we have a saved session
+      const savedToken = localStorage.getItem("authToken");
+      const savedRole = localStorage.getItem("userRole");
+      const savedUsername = localStorage.getItem("username");
+
+      if (!savedToken || !savedRole || !savedUsername) {
+        return; // No saved session
+      }
+
+      // Restore session variables
+      authToken = savedToken;
+      userRole = savedRole;
+      username = savedUsername;
+
+      // Verify token is still valid by making a test request
+      try {
+        const res = await fetch(`${API_BASE}/clients/`, {
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          // Token is invalid, clear session
+          switchToLogin();
+          return;
+        }
+
+        // Token is valid, restore UI
+        document.getElementById("userName").textContent = "@" + username;
+        document.getElementById("userRole").textContent = userRole;
+        document.getElementById("userAvatar").textContent = username[0].toUpperCase();
+
+        if (userRole === "admin") {
+          document.getElementById("adminNav").style.display = "block";
+          document.getElementById("navDashboard").style.display = "flex";
+        } else {
+          document.getElementById("adminNav").style.display = "none";
+          document.getElementById("navDashboard").style.display = "none";
+        }
+
+        switchToApp();
+
+        // Set default view based on role
+        if (userRole === "admin") {
+          setActiveView("dashboard");
+          loadDashboard();
+        } else {
+          setActiveView("rewrite");
+        }
+
+        loadClients();
+        loadRecentEntries();
+      } catch (err) {
+        console.error("Session restore failed:", err);
+        switchToLogin();
+      }
+    }
+
     async function login() {
       const u = document.getElementById("username").value.trim();
       const p = document.getElementById("password").value;
@@ -1417,6 +1481,11 @@
         authToken = data.access_token;
         userRole = data.role;
         username = data.username;
+
+        // Save to localStorage for session persistence
+        localStorage.setItem("authToken", authToken);
+        localStorage.setItem("userRole", userRole);
+        localStorage.setItem("username", username);
 
         document.getElementById("userName").textContent = "@" + username;
         document.getElementById("userRole").textContent = userRole;
@@ -2257,6 +2326,9 @@
           throw new Error("User not found");
         }
 
+        // Show the user details card
+        document.getElementById("userDetailsCard").style.display = "block";
+
         // Fill form
         document.getElementById("adminUserId").value = user.id;
         document.getElementById("adminUserUsername").value = user.username;
@@ -2293,7 +2365,7 @@
       }).join('');
     }
 
-    function clearUserForm() {
+    function clearUserForm(showCard = true) {
       document.getElementById("adminUserId").value = "";
       document.getElementById("adminUserUsername").value = "";
       document.getElementById("adminUserPassword").value = "";
@@ -2309,6 +2381,13 @@
       }
 
       document.getElementById("adminUserStatus").textContent = "";
+
+      // Show or hide the card based on parameter
+      if (showCard) {
+        document.getElementById("userDetailsCard").style.display = "block";
+      } else {
+        document.getElementById("userDetailsCard").style.display = "none";
+      }
     }
 
     async function saveUser() {
@@ -2392,7 +2471,7 @@
           document.getElementById("adminUserStatus").textContent = "User updated successfully.";
         }
 
-        clearUserForm();
+        clearUserForm(false); // Hide form after save
         loadAdminUsers();
       } catch (err) {
         console.error(err);
@@ -2469,7 +2548,7 @@
         }
 
         document.getElementById("adminUserStatus").textContent = "User deleted.";
-        clearUserForm();
+        clearUserForm(false); // Hide form after delete
         loadAdminUsers();
       } catch (err) {
         console.error(err);
@@ -2555,6 +2634,10 @@
         login();
       }
     });
+
+    // ========== INITIALIZE ==========
+    // Restore session on page load
+    restoreSession();
   </script>
 </body>
 </html>
