@@ -2,46 +2,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AI Time Entry Rewrite</title>
+  <title>RICOCHET 360 - Legal Billing</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root {
-      --shell-bg: #f3f4f6;          /* page background */
-      --app-bg: #ffffff;            /* main app shell */
-      --sidebar-bg: #113355;        /* left nav */
-      --sidebar-bg-hover: #0e2944;
-      --sidebar-border: #0b2036;
-      --accent: #1d75d1;
-      --accent-soft: rgba(29, 117, 209, 0.08);
-      --accent-strong: #145aa4;
+      /* RICOCHET 360 Color Palette */
+      --shell-bg: #f5f7fb;
+      --app-bg: #ffffff;
+      --sidebar-bg: #0f2c4d;        /* Deep navy blue */
+      --sidebar-bg-hover: #1a3a5f;
+      --sidebar-border: #0a1f38;
+      --accent: #3b82f6;             /* Modern blue */
+      --accent-soft: rgba(59, 130, 246, 0.08);
+      --accent-strong: #2563eb;
       --border-soft: #e5e7eb;
       --text-main: #111827;
       --text-muted: #6b7280;
-      --danger: #b91c1c;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --warning: #f59e0b;
+      --warning-bg: #fef3c7;
+      --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+      --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
     }
 
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background: var(--shell-bg);
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
       align-items: stretch;
-      justify-content: center;
     }
 
     .root {
       flex: 1;
       display: flex;
-      align-items: stretch;
-      justify-content: center;
     }
 
-    /* ---------- LOGIN SCREEN ---------- */
+    /* ========== LOGIN SCREEN ========== */
 
     #loginScreen {
       flex: 1;
@@ -53,209 +60,234 @@
 
     .login-card {
       width: 100%;
-      max-width: 420px;
-      background: #ffffff;
-      border-radius: 10px;
-      padding: 24px 24px 20px;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
-      color: var(--text-main);
+      max-width: 440px;
+      background: var(--app-bg);
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
       border: 1px solid var(--border-soft);
     }
 
-    .login-title {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .login-brand {
+      text-align: center;
+      margin-bottom: 24px;
     }
 
-    .login-title span.logo-pill {
+    .login-logo {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      border-radius: 12px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      background: var(--accent);
-      font-size: 14px;
+      font-size: 24px;
       font-weight: 700;
-      color: #f9fafb;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .login-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
     }
 
     .login-subtitle {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-muted);
-      margin-bottom: 18px;
+      margin-bottom: 24px;
     }
 
-    .login-subtitle code {
-      font-family: "SF Mono", Menlo, Consolas, monospace;
-      font-size: 11px;
-      background: #f3f4f6;
-      padding: 2px 4px;
-      border-radius: 4px;
-      color: #111827;
+    .form-group {
+      margin-bottom: 16px;
     }
 
-    .login-grid {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .login-label {
-      font-size: 12px;
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
       color: var(--text-main);
+      margin-bottom: 6px;
     }
 
-    .login-input {
+    .form-input {
       width: 100%;
-      padding: 8px 10px;
+      padding: 10px 14px;
       border-radius: 6px;
       border: 1px solid #d1d5db;
-      background: #ffffff;
-      color: #111827;
-      font-size: 13px;
+      background: var(--app-bg);
+      color: var(--text-main);
+      font-size: 14px;
       outline: none;
+      transition: all 0.2s;
     }
 
-    .login-input::placeholder {
-      color: #9ca3af;
-    }
-
-    .login-input:focus {
+    .form-input:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(29, 117, 209, 0.4);
+      box-shadow: 0 0 0 3px var(--accent-soft);
     }
 
-    .login-footer-row {
-      display: flex;
+    .btn {
+      width: 100%;
+      padding: 12px 24px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      margin-top: 4px;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
     }
 
     .login-hint {
-      font-size: 11px;
+      margin-top: 16px;
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 6px;
+      font-size: 12px;
       color: var(--text-muted);
+      line-height: 1.6;
     }
 
     .login-hint code {
+      background: #e5e7eb;
+      padding: 2px 6px;
+      border-radius: 4px;
       font-family: "SF Mono", Menlo, Consolas, monospace;
       font-size: 11px;
-      background: #f3f4f6;
-      padding: 2px 4px;
-      border-radius: 4px;
-      color: #111827;
-    }
-
-    .login-button {
-      border: none;
-      border-radius: 999px;
-      padding: 7px 14px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: #f9fafb;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .login-button:hover {
-      filter: brightness(1.05);
     }
 
     .login-status {
-      margin-top: 8px;
-      font-size: 12px;
-      min-height: 16px;
+      margin-top: 12px;
+      font-size: 13px;
+      min-height: 18px;
       color: var(--danger);
     }
 
-    .login-status.error {
-      color: var(--danger);
-    }
-
-    /* ---------- APP LAYOUT ---------- */
+    /* ========== APP LAYOUT ========== */
 
     #appScreen {
       flex: 1;
       display: none;
-      padding: 24px 12px;
-    }
-
-    .app-shell {
-      display: flex;
       flex-direction: column;
-      height: 100%;
-      max-width: 1200px;          /* centered app like QuickBooks */
-      width: 100%;
-      margin: 0 auto;
-      background: var(--app-bg);
-      border-radius: 4px;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
-      overflow: hidden;
-      border: 1px solid var(--border-soft);
     }
 
     .app-header {
+      background: var(--app-bg);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 0 24px;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 18px;
-      background: #ffffff;
-      color: var(--text-main);
-      border-bottom: 1px solid var(--border-soft);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
 
-    .app-header-title {
-      font-size: 16px;
-      font-weight: 600;
+    .app-header-left {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 16px;
     }
 
-    .app-header-title span.sub {
-      font-size: 11px;
+    .app-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .app-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .app-title-sub {
+      font-size: 12px;
       color: var(--text-muted);
       font-weight: 400;
     }
 
-    .app-user-chip {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: #f9fafb;
+    .app-header-right {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 12px;
     }
 
-    .role-pill {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: rgba(22, 163, 74, 0.08);
-      color: #15803d;
-      border: 1px solid rgba(22, 163, 74, 0.35);
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
     }
 
-    .role-pill.admin {
-      background: rgba(250, 204, 21, 0.1);
-      color: #a16207;
-      border-color: rgba(250, 204, 21, 0.5);
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
     }
 
-    .logout-link {
-      cursor: pointer;
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .user-role {
       font-size: 11px;
       color: var(--text-muted);
-      text-decoration: underline;
+    }
+
+    .logout-btn {
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
     }
 
     .app-body {
@@ -264,638 +296,921 @@
       min-height: 0;
     }
 
-    /* ---------- SIDEBAR ---------- */
+    /* ========== SIDEBAR ========== */
 
     .sidebar {
-      width: 210px;
+      width: 240px;
       background: var(--sidebar-bg);
       color: #e5e7eb;
-      border-right: 1px solid var(--sidebar-border);
       display: flex;
       flex-direction: column;
-      padding: 10px 8px;
-      gap: 10px;
+      padding: 24px 12px;
+      gap: 8px;
     }
 
-    .nav-group-label {
+    .nav-section {
+      margin-bottom: 16px;
+    }
+
+    .nav-section-label {
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #cbd5f5;
-      padding: 4px 8px;
-      opacity: 0.9;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      padding: 0 12px;
+      margin-bottom: 8px;
+      font-weight: 600;
     }
 
     .nav-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 4px;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 13px;
-      color: #e5e7eb;
-      border: 1px solid transparent;
-    }
-
-    .nav-item span.icon {
       font-size: 14px;
-      opacity: 0.95;
+      color: #cbd5e1;
+      transition: all 0.2s;
+      font-weight: 500;
     }
 
     .nav-item:hover {
       background: var(--sidebar-bg-hover);
-      border-color: rgba(148, 163, 184, 0.3);
+      color: white;
     }
 
     .nav-item.active {
-      background: #ffffff;
-      color: var(--sidebar-bg);
-      border-color: #ffffff;
+      background: var(--accent);
+      color: white;
+    }
+
+    .nav-icon {
+      font-size: 18px;
+      width: 20px;
+      text-align: center;
     }
 
     .sidebar-footer {
       margin-top: auto;
-      padding: 6px 8px;
+      padding: 12px;
       font-size: 11px;
-      color: #cbd5f5;
-      opacity: 0.8;
+      color: #64748b;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 24px;
     }
 
-    /* ---------- MAIN CONTENT ---------- */
+    /* ========== MAIN CONTENT ========== */
 
     .content {
       flex: 1;
-      padding: 16px;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: #f5f7fb;
+      padding: 24px;
+      overflow-y: auto;
+      background: var(--shell-bg);
     }
 
     .view {
-      flex: 1;
       display: none;
-      min-height: 0;
     }
 
     .view.active {
-      display: flex;
+      display: block;
     }
 
-    .center-wrap {
-      width: 100%;
-      max-width: 980px;
-      margin: 0 auto;
-      display: flex;
-      gap: 16px;
+    .page-header {
+      margin-bottom: 24px;
     }
 
-    .center-wrap.single {
-      max-width: 980px;
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
     }
 
-    .pane {
-      background: #ffffff;
-      border-radius: 4px;
-      padding: 12px;
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ========== DASHBOARD KPI CARDS ========== */
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--app-bg);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
       border: 1px solid var(--border-soft);
-      display: flex;
-      flex-direction: column;
+      transition: all 0.2s;
     }
 
-    .pane-left {
-      flex: 0 0 38%;
+    .kpi-card:hover {
+      box-shadow: var(--card-shadow-hover);
+      transform: translateY(-2px);
     }
 
-    .pane-right {
-      flex: 1;
+    .kpi-header {
       display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .kpi-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .kpi-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .kpi-icon.blue {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--accent);
+    }
+
+    .kpi-icon.green {
+      background: rgba(22, 163, 74, 0.1);
+      color: var(--success);
+    }
+
+    .kpi-icon.orange {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+
+    .kpi-icon.purple {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8b5cf6;
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .kpi-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .kpi-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .kpi-trend.up {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .kpi-trend.down {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .kpi-trend-label {
+      color: var(--text-muted);
+    }
+
+    /* ========== CHART CONTAINERS ========== */
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: var(--app-bg);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-soft);
+    }
+
+    .chart-header {
+      margin-bottom: 20px;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .chart-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+
+    /* ========== TABS ========== */
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid var(--border-soft);
+      margin-bottom: 24px;
+    }
+
+    .tab {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      color: var(--accent);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ========== REWRITE ENGINE ========== */
+
+    .rewrite-grid {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--app-bg);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-soft);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 20px;
     }
 
     label {
-      font-size: 12px;
-      margin-top: 8px;
-      color: var(--text-main);
-    }
-
-    input, select, textarea, button {
-      margin-top: 4px;
-      padding: 7px 9px;
+      display: block;
       font-size: 13px;
-      border-radius: 4px;
-      border: 1px solid #d1d5db;
-      box-sizing: border-box;
+      font-weight: 500;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      margin-top: 16px;
+    }
+
+    label:first-of-type {
+      margin-top: 0;
+    }
+
+    input, select, textarea {
       width: 100%;
-      background: #ffffff;
-      color: #111827;
-    }
-
-    select {
-      background-color: #ffffff;
-    }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: #9ca3af;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: var(--app-bg);
+      color: var(--text-main);
+      font-size: 14px;
       outline: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(29, 117, 209, 0.35);
+      box-shadow: 0 0 0 3px var(--accent-soft);
     }
 
     textarea {
       resize: vertical;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: inherit;
     }
 
-    button {
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: #f9fafb;
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 6px;
       border: none;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      margin-top: 10px;
-      font-weight: 500;
-      border-radius: 999px;
-    }
-
-    button.secondary {
-      background: #6b7280;
-    }
-
-    button.danger {
-      background: var(--danger);
-    }
-
-    button.small {
-      font-size: 11px;
-      padding: 4px 8px;
-    }
-
-    button:hover {
-      filter: brightness(1.03);
-    }
-
-    .button-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .status {
-      font-size: 12px;
-      margin-top: 8px;
-      min-height: 16px;
-      color: var(--text-muted);
-    }
-
-    .output-section {
+      transition: all 0.2s;
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      overflow: auto;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    .status-message {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      min-height: 18px;
+    }
+
+    .output-grid {
+      display: grid;
+      gap: 16px;
     }
 
     .output-block {
-      margin-bottom: 4px;
-    }
-
-    .output-title {
-      font-weight: 600;
-      font-size: 13px;
-      margin-bottom: 2px;
-      color: var(--text-main);
-    }
-
-    pre {
       background: #f9fafb;
-      border-radius: 4px;
-      padding: 8px;
-      font-family: "SF Mono", Menlo, Consolas, monospace;
-      font-size: 12px;
-      white-space: pre-wrap;
-      border: 1px solid #e5e7eb;
-      min-height: 36px;
-      color: #111827;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid var(--border-soft);
     }
 
-    .grid-bottom {
-      margin-top: 8px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr);
-      gap: 8px;
-      min-height: 0;
+    .output-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
     }
+
+    .output-text {
+      font-size: 14px;
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 60px;
+    }
+
+    /* ========== TABLES ========== */
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 12px;
-      color: #111827;
+      font-size: 13px;
     }
 
     th, td {
-      border: 1px solid #e5e7eb;
-      padding: 4px 6px;
+      padding: 12px;
       text-align: left;
-      vertical-align: top;
+      border-bottom: 1px solid var(--border-soft);
     }
 
     th {
       background: #f9fafb;
       font-weight: 600;
-    }
-
-    .section-title {
-      font-weight: 600;
-      font-size: 13px;
-      margin-bottom: 4px;
       color: var(--text-main);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .pill-muted {
-      display: inline-flex;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: #edf2ff;
-      font-size: 10px;
-      color: #4b5563;
-      margin-left: 4px;
+    tbody tr:hover {
+      background: #f9fafb;
     }
 
     .badge {
       display: inline-block;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent-strong);
-    }
-
-    .badge-danger {
-      background: #fee2e2;
-      color: var(--danger);
-      border: 1px solid #fecaca;
-    }
-
-    .small {
+      padding: 4px 10px;
+      border-radius: 12px;
       font-size: 11px;
-      color: var(--text-muted);
+      font-weight: 600;
     }
 
-    .table-scroll {
-      max-height: 200px;
-      overflow-y: auto;
-      display: block;
+    .badge-admin {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
     }
 
-    .table-scroll table {
-      width: 100%;
+    .badge-user {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--accent);
+    }
+
+    /* ========== RESPONSIVE ========== */
+
+    @media (max-width: 1024px) {
+      .chart-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .rewrite-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 60px;
+      }
+
+      .nav-item span:not(.nav-icon) {
+        display: none;
+      }
+
+      .nav-section-label {
+        display: none;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <div class="root">
-    <!-- Login Screen -->
+    <!-- ========== LOGIN SCREEN ========== -->
     <div id="loginScreen">
       <div class="login-card">
-        <div class="login-title">
-          <span class="logo-pill">AI</span>
-          Time Entry Rewrite
-        </div>
-        <div class="login-subtitle">
-          Rewrite and normalize billing narratives with client-specific rules.<br>
-          Use <code>demo/demo123</code> (user) or <code>admin/admin123</code> (admin).
+        <div class="login-brand">
+          <div class="login-logo">R360</div>
+          <div class="login-title">RICOCHET 360</div>
+          <div class="login-subtitle">Legal Billing & Time Entry Management</div>
         </div>
 
-        <div class="login-grid">
-          <div>
-            <div class="login-label">Username</div>
-            <input id="username" class="login-input" value="demo" />
-          </div>
-          <div>
-            <div class="login-label">Password</div>
-            <input id="password" class="login-input" type="password" value="demo123" />
-          </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input id="username" class="form-input" value="demo" autocomplete="username">
         </div>
 
-        <div class="login-footer-row">
-          <div class="login-hint">
-            <div>Standard user: <code>demo / demo123</code></div>
-            <div>Admin review: <code>admin / admin123</code></div>
-          </div>
-          <button id="loginBtn" class="login-button">
-            <span>Enter workspace</span>
-          </button>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input id="password" class="form-input" type="password" value="demo123" autocomplete="current-password">
+        </div>
+
+        <button id="loginBtn" class="btn btn-primary">
+          <span>Sign In</span>
+        </button>
+
+        <div class="login-hint">
+          <strong>Demo Credentials:</strong><br>
+          User: <code>demo / demo123</code><br>
+          Admin: <code>admin / admin123</code>
         </div>
 
         <div id="loginStatus" class="login-status"></div>
       </div>
     </div>
 
-    <!-- App Screen -->
+    <!-- ========== APP SCREEN ========== -->
     <div id="appScreen">
-      <div class="app-shell">
-        <div class="app-header">
-          <div class="app-header-title">
-            <span>AI Time Entry Rewrite</span>
-            <span class="sub">Client-aware billing narrative engine</span>
-          </div>
-          <div class="app-user-chip">
-            <span id="userLabel">@user</span>
-            <span id="rolePill" class="role-pill">user</span>
-            <span class="logout-link" id="logoutLink">Logout</span>
+      <!-- Header -->
+      <div class="app-header">
+        <div class="app-header-left">
+          <div class="app-logo">R360</div>
+          <div>
+            <div class="app-title">RICOCHET 360</div>
+            <div class="app-title-sub">Legal Billing Platform</div>
           </div>
         </div>
 
-        <div class="app-body">
-          <!-- Sidebar Navigation -->
-          <aside class="sidebar">
-            <div class="nav-group-label">Workspace</div>
-            <div id="navRewrite" class="nav-item active">
-              <span class="icon">🏠</span>
+        <div class="app-header-right">
+          <div class="user-menu">
+            <div class="user-avatar" id="userAvatar">D</div>
+            <div class="user-info">
+              <div class="user-name" id="userName">@demo</div>
+              <div class="user-role" id="userRole">User</div>
+            </div>
+          </div>
+          <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+
+      <div class="app-body">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <div class="nav-section">
+            <div class="nav-section-label">Main</div>
+            <div id="navDashboard" class="nav-item active">
+              <span class="nav-icon">📊</span>
+              <span>Dashboard</span>
+            </div>
+            <div id="navRewrite" class="nav-item">
+              <span class="nav-icon">✏️</span>
               <span>Rewrite Engine</span>
             </div>
+          </div>
 
-            <div id="adminNavGroup" style="display:none;">
-              <div class="nav-group-label">Admin</div>
-              <div id="navAudit" class="nav-item">
-                <span class="icon">📜</span>
-                <span>Audit Trail</span>
+          <div id="adminNav" class="nav-section" style="display: none;">
+            <div class="nav-section-label">Admin</div>
+            <div id="navAudit" class="nav-item">
+              <span class="nav-icon">📋</span>
+              <span>Audit Trail</span>
+            </div>
+            <div id="navClients" class="nav-item">
+              <span class="nav-icon">👥</span>
+              <span>Clients</span>
+            </div>
+          </div>
+
+          <div class="sidebar-footer">
+            Powered by Ollama<br>qwen2.5:7b
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+          <!-- ========== DASHBOARD VIEW ========== -->
+          <section id="viewDashboard" class="view active">
+            <div class="page-header">
+              <h1 class="page-title">Performance Dashboard</h1>
+              <p class="page-subtitle">Legal billing analytics and insights</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+              <button class="tab active" data-tab="overview">Overview</button>
+              <button class="tab" data-tab="clients">Clients</button>
+              <button class="tab" data-tab="trends">Trends</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="tabOverview" class="tab-content active">
+              <!-- KPI Cards -->
+              <div class="kpi-grid">
+                <div class="kpi-card">
+                  <div class="kpi-header">
+                    <div class="kpi-label">Total Rewrites</div>
+                    <div class="kpi-icon blue">📝</div>
+                  </div>
+                  <div class="kpi-value" id="kpiRewrites">0</div>
+                  <div class="kpi-footer">
+                    <span class="kpi-trend up" id="kpiRewritesTrend">
+                      <span>↑</span>
+                      <span>0%</span>
+                    </span>
+                    <span class="kpi-trend-label">vs last 30 days</span>
+                  </div>
+                </div>
+
+                <div class="kpi-card">
+                  <div class="kpi-header">
+                    <div class="kpi-label">Total Hours</div>
+                    <div class="kpi-icon green">⏱️</div>
+                  </div>
+                  <div class="kpi-value" id="kpiHours">0</div>
+                  <div class="kpi-footer">
+                    <span class="kpi-trend up" id="kpiHoursTrend">
+                      <span>↑</span>
+                      <span>0%</span>
+                    </span>
+                    <span class="kpi-trend-label">vs last 30 days</span>
+                  </div>
+                </div>
+
+                <div class="kpi-card">
+                  <div class="kpi-header">
+                    <div class="kpi-label">Active Clients</div>
+                    <div class="kpi-icon orange">👥</div>
+                  </div>
+                  <div class="kpi-value" id="kpiClients">0</div>
+                  <div class="kpi-footer">
+                    <span class="kpi-trend-label">Total clients in system</span>
+                  </div>
+                </div>
+
+                <div class="kpi-card">
+                  <div class="kpi-header">
+                    <div class="kpi-label">Avg Hours/Entry</div>
+                    <div class="kpi-icon purple">📈</div>
+                  </div>
+                  <div class="kpi-value" id="kpiAvgHours">0.0</div>
+                  <div class="kpi-footer">
+                    <span class="kpi-trend-label">Average per time entry</span>
+                  </div>
+                </div>
               </div>
-              <div id="navClients" class="nav-item">
-                <span class="icon">👥</span>
-                <span>Clients</span>
+
+              <!-- Charts -->
+              <div class="chart-grid">
+                <div class="chart-card">
+                  <div class="chart-header">
+                    <div class="chart-title">Client Distribution</div>
+                    <div class="chart-subtitle">Hours by client</div>
+                  </div>
+                  <div class="chart-container">
+                    <canvas id="clientChart"></canvas>
+                  </div>
+                </div>
+
+                <div class="chart-card">
+                  <div class="chart-header">
+                    <div class="chart-title">Monthly Trend</div>
+                    <div class="chart-subtitle">Rewrites over time</div>
+                  </div>
+                  <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Entries -->
+              <div class="card">
+                <h3 class="card-title">Recent Time Entries</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Client</th>
+                      <th>Standard Rewrite</th>
+                      <th>Hours</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboardRecentTable">
+                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading...</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <div class="sidebar-footer">
-              Local demo build · qwen2.5:7b via Ollama
+            <!-- Clients Tab -->
+            <div id="tabClients" class="tab-content">
+              <div class="card">
+                <h3 class="card-title">Client Performance</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Client Name</th>
+                      <th>Entries</th>
+                      <th>Total Hours</th>
+                    </tr>
+                  </thead>
+                  <tbody id="clientStatsTable">
+                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading...</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </aside>
 
-          <!-- Main Content -->
-          <main class="content">
-            <!-- Rewrite View -->
-            <section id="view-rewrite" class="view active">
-              <div class="center-wrap">
-                <section class="pane pane-left">
-                  <div class="section-title">Time Entry</div>
+            <!-- Trends Tab -->
+            <div id="tabTrends" class="tab-content">
+              <div class="chart-card">
+                <div class="chart-header">
+                  <div class="chart-title">6-Month Activity Trend</div>
+                  <div class="chart-subtitle">Rewrites and hours over the last 6 months</div>
+                </div>
+                <div class="chart-container" style="height: 400px;">
+                  <canvas id="monthlyTrendChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </section>
 
-                  <label for="clientSelect">Client</label>
-                  <select id="clientSelect">
-                    <option value="">Loading clients...</option>
-                  </select>
+          <!-- ========== REWRITE ENGINE VIEW ========== -->
+          <section id="viewRewrite" class="view">
+            <div class="page-header">
+              <h1 class="page-title">Time Entry Rewrite Engine</h1>
+              <p class="page-subtitle">AI-powered billing narrative optimization</p>
+            </div>
 
-                  <label for="hours">Hours</label>
-                  <input id="hours" type="number" step="0.1" value="1.5">
+            <div class="rewrite-grid">
+              <!-- Input Panel -->
+              <div class="card">
+                <h3 class="card-title">Time Entry Details</h3>
 
-                  <label for="original">Original Narrative</label>
-                  <textarea id="original" rows="8"
-                    placeholder="Reviewed client emails regarding lease dispute and drafted response."></textarea>
+                <label>Client</label>
+                <select id="clientSelect">
+                  <option value="">Loading...</option>
+                </select>
 
-                  <label for="rules">Custom Rules (JSON for “Rewrite Only”)</label>
-                  <textarea id="rules" rows="5">
+                <label>Hours</label>
+                <input id="hours" type="number" step="0.1" value="1.5">
+
+                <label>Original Narrative</label>
+                <textarea id="original" rows="6" placeholder="Enter your time entry narrative..."></textarea>
+
+                <label>Custom Rules (JSON - Optional)</label>
+                <textarea id="rules" rows="5">
 {
   "forbidden_terms": ["email review", "miscellaneous"],
   "required_elements": ["Include subject of work"]
 }
-                  </textarea>
+                </textarea>
 
-                  <div class="button-row">
-                    <button id="runBtn">Rewrite Only</button>
-                    <button id="saveBtn" class="secondary">Rewrite &amp; Save</button>
-                  </div>
-                  <div id="status" class="status"></div>
-                </section>
+                <div class="btn-group">
+                  <button id="runBtn" class="btn btn-primary">Rewrite Only</button>
+                  <button id="saveBtn" class="btn btn-secondary">Rewrite & Save</button>
+                </div>
 
-                <section class="pane pane-right">
-                  <div class="section-title">Rewrites</div>
-                  <div class="output-section">
-                    <div class="output-block">
-                      <div class="output-title">Standard</div>
-                      <pre id="outStandard"></pre>
-                    </div>
-                    <div class="output-block">
-                      <div class="output-title">Client-Compliant</div>
-                      <pre id="outClient"></pre>
-                    </div>
-                    <div class="output-block">
-                      <div class="output-title">Audit-Safe</div>
-                      <pre id="outAudit"></pre>
-                    </div>
-                    <div class="output-block">
-                      <div class="output-title">Notes</div>
-                      <pre id="outNotes"></pre>
-                    </div>
-                  </div>
-
-                  <div class="grid-bottom">
-                    <div>
-                      <div class="section-title">
-                        Recent Saved Entries
-                        <span class="pill-muted">latest</span>
-                      </div>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Client</th>
-                            <th>Standard Rewrite</th>
-                            <th>Notes</th>
-                          </tr>
-                        </thead>
-                        <tbody id="recentTableBody">
-                          <!-- rows injected -->
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <div>
-                      <div class="section-title">
-                        Tips
-                        <span class="pill-muted">demo</span>
-                      </div>
-                      <p class="small">
-                        • Use <strong>Rewrite Only</strong> to experiment with JSON rules without saving.<br>
-                        • Use <strong>Rewrite &amp; Save</strong> to log entries and populate the recent table.<br>
-                        • Admins can add billing guidelines &amp; examples per client in the <strong>Clients</strong> area.
-                      </p>
-                    </div>
-                  </div>
-                </section>
+                <div id="status" class="status-message"></div>
               </div>
-            </section>
 
-            <!-- Admin Audit View -->
-            <section id="view-admin-audit" class="view">
-              <div class="center-wrap single">
-                <section class="pane" style="flex:1; overflow:hidden;">
-                  <div class="section-title">
-                    Audit Trail
-                    <span class="badge">Admin only</span>
+              <!-- Output Panel -->
+              <div class="card">
+                <h3 class="card-title">AI Rewrites</h3>
+
+                <div class="output-grid">
+                  <div class="output-block">
+                    <div class="output-label">Standard Rewrite</div>
+                    <div class="output-text" id="outStandard">Results will appear here...</div>
                   </div>
-                  <div class="button-row" style="margin-top:6px;">
-                    <button id="loadAuditBtn" class="secondary small">Load Audit Log</button>
+
+                  <div class="output-block">
+                    <div class="output-label">Client-Compliant</div>
+                    <div class="output-text" id="outClient">Results will appear here...</div>
                   </div>
-                  <div style="margin-top:10px; max-height:100%; overflow:auto;">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>When / Who</th>
-                          <th>Client &amp; Original</th>
-                          <th>Standard Rewrite</th>
-                        </tr>
-                      </thead>
-                      <tbody id="auditTableBody">
-                        <!-- rows injected -->
-                      </tbody>
-                    </table>
+
+                  <div class="output-block">
+                    <div class="output-label">Audit-Safe</div>
+                    <div class="output-text" id="outAudit">Results will appear here...</div>
                   </div>
-                </section>
+
+                  <div class="output-block">
+                    <div class="output-label">AI Notes</div>
+                    <div class="output-text" id="outNotes">Results will appear here...</div>
+                  </div>
+                </div>
               </div>
-            </section>
+            </div>
 
-            <!-- Admin Clients View -->
-            <section id="view-admin-clients" class="view">
-              <div class="center-wrap single">
-                <section class="pane" style="flex:1; display:flex; gap:16px; overflow:hidden;">
-                  <!-- Left: client list -->
-                  <div style="flex:0 0 38%; display:flex; flex-direction:column;">
-                    <div class="section-title">
-                      Clients
-                      <span class="pill-muted">Admin</span>
-                    </div>
-                    <div class="button-row" style="margin-top:6px;">
-                      <button id="adminClientsRefreshBtn" class="secondary small">Refresh</button>
-                      <button id="adminClientNewBtn" class="small">New</button>
-                    </div>
-                    <div class="table-scroll" style="margin-top:10px;">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th style="width:25%;">ID</th>
-                            <th style="width:45%;">Name</th>
-                            <th style="width:30%;">Code</th>
-                          </tr>
-                        </thead>
-                        <tbody id="adminClientTableBody">
-                          <!-- rows injected -->
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+            <!-- Recent Entries Table -->
+            <div class="card" style="margin-top: 24px;">
+              <h3 class="card-title">Recent Saved Entries</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Standard Rewrite</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="recentTableBody">
+                  <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No entries yet</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-                  <!-- Right: client detail form -->
-                  <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
-                    <div class="section-title">
-                      Client Details
-                      <span class="pill-muted">Guidelines &amp; examples</span>
-                    </div>
+          <!-- ========== AUDIT TRAIL VIEW ========== -->
+          <section id="viewAudit" class="view">
+            <div class="page-header">
+              <h1 class="page-title">Audit Trail</h1>
+              <p class="page-subtitle">Complete activity log for compliance</p>
+            </div>
 
-                    <label for="adminClientId">Client ID</label>
-                    <input id="adminClientId" placeholder="e.g., C004">
-
-                    <label for="adminClientName">Client Name</label>
-                    <input id="adminClientName" placeholder="Client Name">
-
-                    <label for="adminClientCode">Client Code</label>
-                    <input id="adminClientCode" placeholder="Billing code (optional)">
-
-                    <label for="adminClientGuidelines">Billing Guidelines (paste or summarize)</label>
-                    <textarea id="adminClientGuidelines" rows="4"
-                      placeholder="Paste key billing guidelines or a concise summary here..."></textarea>
-
-                    <label for="adminClientAccepted">Accepted Examples (line-separated)</label>
-                    <textarea id="adminClientAccepted" rows="3"
-                      placeholder="Example: Reviewed and analyzed client correspondence regarding lease dispute and prepared summary.&#10;Example: Drafted motion to compel and supporting memorandum."></textarea>
-
-                    <label for="adminClientDenied">Denied Examples (line-separated)</label>
-                    <textarea id="adminClientDenied" rows="3"
-                      placeholder="Example: emails&#10;Example: work on case"></textarea>
-
-                    <div class="button-row">
-                      <button id="adminClientSaveBtn">Save Client</button>
-                      <button id="adminClientDeleteBtn" class="danger">Delete Client</button>
-                    </div>
-                    <div id="adminClientStatus" class="status"></div>
-                  </div>
-                </section>
+            <div class="card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 class="card-title" style="margin: 0;">Audit Events</h3>
+                <button id="loadAuditBtn" class="btn btn-secondary" style="width: auto; padding: 8px 16px;">
+                  Refresh
+                </button>
               </div>
-            </section>
-          </main>
-        </div>
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Client</th>
+                    <th>Original</th>
+                    <th>Standard Rewrite</th>
+                  </tr>
+                </thead>
+                <tbody id="auditTableBody">
+                  <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Click Refresh to load audit events</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- ========== CLIENTS MANAGEMENT VIEW ========== -->
+          <section id="viewClients" class="view">
+            <div class="page-header">
+              <h1 class="page-title">Client Management</h1>
+              <p class="page-subtitle">Configure billing guidelines and rules</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 400px 1fr; gap: 24px;">
+              <!-- Client List -->
+              <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                  <h3 class="card-title" style="margin: 0;">Clients</h3>
+                  <button id="adminClientNewBtn" class="btn btn-primary" style="width: auto; padding: 8px 16px;">
+                    New
+                  </button>
+                </div>
+
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminClientTableBody">
+                    <tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Loading...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Client Details -->
+              <div class="card">
+                <h3 class="card-title">Client Details</h3>
+
+                <label>Client ID</label>
+                <input id="adminClientId" placeholder="e.g., C004">
+
+                <label>Client Name</label>
+                <input id="adminClientName" placeholder="Client Name">
+
+                <label>Client Code</label>
+                <input id="adminClientCode" placeholder="Billing code (optional)">
+
+                <label>Billing Guidelines</label>
+                <textarea id="adminClientGuidelines" rows="4" placeholder="Paste key billing guidelines..."></textarea>
+
+                <label>Accepted Examples</label>
+                <textarea id="adminClientAccepted" rows="3" placeholder="Line-separated accepted examples..."></textarea>
+
+                <label>Denied Examples</label>
+                <textarea id="adminClientDenied" rows="3" placeholder="Line-separated denied examples..."></textarea>
+
+                <div class="btn-group">
+                  <button id="adminClientSaveBtn" class="btn btn-primary">Save Client</button>
+                  <button id="adminClientDeleteBtn" class="btn btn-danger">Delete</button>
+                </div>
+
+                <div id="adminClientStatus" class="status-message"></div>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   </div>
 
   <script>
     const API_BASE = "http://localhost:9001";
-
     let authToken = null;
     let userRole = null;
     let username = null;
 
-    const loginScreen = document.getElementById("loginScreen");
-    const appScreen = document.getElementById("appScreen");
+    // Charts
+    let clientChart = null;
+    let trendChart = null;
+    let monthlyTrendChart = null;
 
-    const loginBtn = document.getElementById("loginBtn");
-    const loginStatus = document.getElementById("loginStatus");
-    const usernameInput = document.getElementById("username");
-    const passwordInput = document.getElementById("password");
-
-    const userLabel = document.getElementById("userLabel");
-    const rolePill = document.getElementById("rolePill");
-    const logoutLink = document.getElementById("logoutLink");
-
-    const clientSelect = document.getElementById("clientSelect");
-    const hoursInput = document.getElementById("hours");
-    const originalInput = document.getElementById("original");
-    const rulesInput = document.getElementById("rules");
-    const runBtn = document.getElementById("runBtn");
-    const saveBtn = document.getElementById("saveBtn");
-    const statusEl = document.getElementById("status");
-
-    const outStandard = document.getElementById("outStandard");
-    const outClient = document.getElementById("outClient");
-    const outAudit = document.getElementById("outAudit");
-    const outNotes = document.getElementById("outNotes");
-
-    const recentTableBody = document.getElementById("recentTableBody");
-
-    // Views & nav
-    const viewRewrite = document.getElementById("view-rewrite");
-    const viewAdminAudit = document.getElementById("view-admin-audit");
-    const viewAdminClients = document.getElementById("view-admin-clients");
-    const navRewrite = document.getElementById("navRewrite");
-    const navAudit = document.getElementById("navAudit");
-    const navClients = document.getElementById("navClients");
-    const adminNavGroup = document.getElementById("adminNavGroup");
-
-    // Audit view
-    const loadAuditBtn = document.getElementById("loadAuditBtn");
-    const auditTableBody = document.getElementById("auditTableBody");
-
-    // Admin clients
-    const adminClientsRefreshBtn = document.getElementById("adminClientsRefreshBtn");
-    const adminClientNewBtn = document.getElementById("adminClientNewBtn");
-    const adminClientTableBody = document.getElementById("adminClientTableBody");
-    const adminClientIdInput = document.getElementById("adminClientId");
-    const adminClientNameInput = document.getElementById("adminClientName");
-    const adminClientCodeInput = document.getElementById("adminClientCode");
-    const adminClientGuidelinesInput = document.getElementById("adminClientGuidelines");
-    const adminClientAcceptedInput = document.getElementById("adminClientAccepted");
-    const adminClientDeniedInput = document.getElementById("adminClientDenied");
-    const adminClientSaveBtn = document.getElementById("adminClientSaveBtn");
-    const adminClientDeleteBtn = document.getElementById("adminClientDeleteBtn");
-    const adminClientStatus = document.getElementById("adminClientStatus");
+    // ========== UTILITY FUNCTIONS ==========
 
     function buildAuthHeaders(base = {}) {
       const headers = { ...base };
@@ -906,62 +1221,48 @@
     }
 
     function showLoginStatus(message, isError = false) {
+      const loginStatus = document.getElementById("loginStatus");
       loginStatus.textContent = message;
-      loginStatus.classList.toggle("error", isError);
+      loginStatus.style.color = isError ? "var(--danger)" : "var(--text-muted)";
     }
 
     function switchToApp() {
-      loginScreen.style.display = "none";
-      appScreen.style.display = "flex";
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("appScreen").style.display = "flex";
     }
 
     function switchToLogin() {
       authToken = null;
       userRole = null;
       username = null;
-      appScreen.style.display = "none";
-      loginScreen.style.display = "flex";
+      document.getElementById("appScreen").style.display = "none";
+      document.getElementById("loginScreen").style.display = "flex";
       showLoginStatus("", false);
-      statusEl.textContent = "";
-      outStandard.textContent = "";
-      outClient.textContent = "";
-      outAudit.textContent = "";
-      outNotes.textContent = "";
-      adminClientStatus.textContent = "";
-      setActiveView("rewrite");
     }
 
-    function setActiveView(view) {
-      // Views
-      viewRewrite.classList.remove("active");
-      viewAdminAudit.classList.remove("active");
-      viewAdminClients.classList.remove("active");
+    function setActiveView(viewName) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
 
-      if (view === "rewrite") {
-        viewRewrite.classList.add("active");
-      } else if (view === "audit") {
-        viewAdminAudit.classList.add("active");
-      } else if (view === "clients") {
-        viewAdminClients.classList.add("active");
-      }
+      const viewMap = {
+        dashboard: { view: "viewDashboard", nav: "navDashboard" },
+        rewrite: { view: "viewRewrite", nav: "navRewrite" },
+        audit: { view: "viewAudit", nav: "navAudit" },
+        clients: { view: "viewClients", nav: "navClients" },
+      };
 
-      // Nav
-      navRewrite.classList.remove("active");
-      navAudit.classList.remove("active");
-      navClients.classList.remove("active");
-
-      if (view === "rewrite") {
-        navRewrite.classList.add("active");
-      } else if (view === "audit") {
-        navAudit.classList.add("active");
-      } else if (view === "clients") {
-        navClients.classList.add("active");
+      const target = viewMap[viewName];
+      if (target) {
+        document.getElementById(target.view).classList.add("active");
+        document.getElementById(target.nav).classList.add("active");
       }
     }
+
+    // ========== LOGIN ==========
 
     async function login() {
-      const u = usernameInput.value.trim();
-      const p = passwordInput.value;
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value;
 
       if (!u || !p) {
         showLoginStatus("Enter username and password.", true);
@@ -985,27 +1286,261 @@
         userRole = data.role;
         username = data.username;
 
-        userLabel.textContent = "@" + username;
-        rolePill.textContent = userRole;
-        rolePill.classList.toggle("admin", userRole === "admin");
+        document.getElementById("userName").textContent = "@" + username;
+        document.getElementById("userRole").textContent = userRole;
+        document.getElementById("userAvatar").textContent = username[0].toUpperCase();
 
-        adminNavGroup.style.display = userRole === "admin" ? "block" : "none";
+        if (userRole === "admin") {
+          document.getElementById("adminNav").style.display = "block";
+        }
 
         showLoginStatus("");
-        statusEl.textContent = "Authenticated. You can now rewrite and save.";
         switchToApp();
+        setActiveView("dashboard");
 
-        setActiveView("rewrite");
         loadClients();
+        loadDashboard();
         loadRecentEntries();
-        if (userRole === "admin") {
-          loadAdminClients();
-        }
       } catch (err) {
         console.error(err);
         showLoginStatus("Login failed: " + err.message, true);
       }
     }
+
+    // ========== DASHBOARD ==========
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch(`${API_BASE}/analytics/dashboard`, {
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        updateDashboardKPIs(data.overview);
+        updateClientChart(data.client_breakdown);
+        updateTrendChart(data.monthly_trend);
+        updateClientStatsTable(data.client_breakdown);
+        loadDashboardRecent();
+      } catch (err) {
+        console.error("Dashboard load error:", err);
+      }
+    }
+
+    function updateDashboardKPIs(overview) {
+      document.getElementById("kpiRewrites").textContent = overview.total_rewrites;
+      document.getElementById("kpiHours").textContent = overview.total_hours.toFixed(1);
+      document.getElementById("kpiClients").textContent = overview.total_clients;
+      document.getElementById("kpiAvgHours").textContent = overview.avg_hours_per_entry.toFixed(1);
+
+      // Trends
+      const rewritesTrendEl = document.getElementById("kpiRewritesTrend");
+      const hoursTrendEl = document.getElementById("kpiHoursTrend");
+
+      const rewriteChange = overview.rewrites_change_30d;
+      const hoursChange = overview.hours_change_30d;
+
+      rewritesTrendEl.className = "kpi-trend " + (rewriteChange >= 0 ? "up" : "down");
+      rewritesTrendEl.innerHTML = `<span>${rewriteChange >= 0 ? "↑" : "↓"}</span><span>${Math.abs(rewriteChange).toFixed(1)}%</span>`;
+
+      hoursTrendEl.className = "kpi-trend " + (hoursChange >= 0 ? "up" : "down");
+      hoursTrendEl.innerHTML = `<span>${hoursChange >= 0 ? "↑" : "↓"}</span><span>${Math.abs(hoursChange).toFixed(1)}%</span>`;
+    }
+
+    function updateClientChart(clientData) {
+      const ctx = document.getElementById("clientChart");
+      if (!ctx) return;
+
+      if (clientChart) {
+        clientChart.destroy();
+      }
+
+      const labels = clientData.map(c => c.name);
+      const hours = clientData.map(c => c.hours);
+
+      clientChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: labels,
+          datasets: [{
+            data: hours,
+            backgroundColor: [
+              "#3b82f6",
+              "#10b981",
+              "#f59e0b",
+              "#8b5cf6",
+              "#ec4899",
+              "#6366f1",
+              "#14b8a6",
+              "#f97316",
+            ],
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "right",
+            }
+          }
+        }
+      });
+    }
+
+    function updateTrendChart(monthlyData) {
+      const ctx = document.getElementById("trendChart");
+      if (!ctx) return;
+
+      if (trendChart) {
+        trendChart.destroy();
+      }
+
+      const labels = monthlyData.map(m => m.month);
+      const rewrites = monthlyData.map(m => m.rewrites);
+
+      trendChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Rewrites",
+            data: rewrites,
+            borderColor: "#3b82f6",
+            backgroundColor: "rgba(59, 130, 246, 0.1)",
+            tension: 0.4,
+            fill: true,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false,
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            }
+          }
+        }
+      });
+
+      // Monthly trend chart (on Trends tab)
+      const ctx2 = document.getElementById("monthlyTrendChart");
+      if (!ctx2) return;
+
+      if (monthlyTrendChart) {
+        monthlyTrendChart.destroy();
+      }
+
+      const hours = monthlyData.map(m => m.hours);
+
+      monthlyTrendChart = new Chart(ctx2, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Rewrites",
+              data: rewrites,
+              backgroundColor: "rgba(59, 130, 246, 0.7)",
+              yAxisID: "y",
+            },
+            {
+              label: "Hours",
+              data: hours,
+              backgroundColor: "rgba(16, 185, 129, 0.7)",
+              yAxisID: "y1",
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              type: "linear",
+              display: true,
+              position: "left",
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Rewrites"
+              }
+            },
+            y1: {
+              type: "linear",
+              display: true,
+              position: "right",
+              beginAtZero: true,
+              grid: {
+                drawOnChartArea: false,
+              },
+              title: {
+                display: true,
+                text: "Hours"
+              }
+            },
+          }
+        }
+      });
+    }
+
+    function updateClientStatsTable(clientData) {
+      const tbody = document.getElementById("clientStatsTable");
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+
+      if (!clientData.length) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No client data</td></tr>';
+        return;
+      }
+
+      clientData.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.name}</td>
+          <td>${c.entries}</td>
+          <td>${c.hours.toFixed(1)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadDashboardRecent() {
+      try {
+        const res = await fetch(`${API_BASE}/rewrites/recent?limit=10`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const rows = await res.json();
+        const tbody = document.getElementById("dashboardRecentTable");
+        tbody.innerHTML = "";
+
+        if (!rows.length) {
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No entries yet</td></tr>';
+          return;
+        }
+
+        rows.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.client.name}</td>
+            <td>${row.rewrite.standard || ""}</td>
+            <td>${row.rewrite.notes || ""}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ========== REWRITE ENGINE ==========
 
     async function loadClients() {
       try {
@@ -1013,21 +1548,17 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const clients = await res.json();
 
-        clientSelect.innerHTML = "";
-        clientSelect.insertAdjacentHTML(
-          "beforeend",
-          `<option value="">Select a client...</option>`
-        );
+        const select = document.getElementById("clientSelect");
+        select.innerHTML = '<option value="">Select a client...</option>';
 
-        for (const c of clients) {
-          clientSelect.insertAdjacentHTML(
-            "beforeend",
-            `<option value="${c.id}">${c.name} (${c.id})</option>`
-          );
-        }
+        clients.forEach(c => {
+          const option = document.createElement("option");
+          option.value = c.id;
+          option.textContent = `${c.name} (${c.id})`;
+          select.appendChild(option);
+        });
       } catch (err) {
         console.error(err);
-        clientSelect.innerHTML = `<option value="">Error loading clients</option>`;
       }
     }
 
@@ -1037,266 +1568,252 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const rows = await res.json();
 
-        recentTableBody.innerHTML = "";
+        const tbody = document.getElementById("recentTableBody");
+        tbody.innerHTML = "";
+
         if (!rows.length) {
-          recentTableBody.innerHTML = `<tr><td colspan="3">No saved entries yet.</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No saved entries yet</td></tr>';
           return;
         }
 
-        for (const row of rows) {
+        rows.forEach(row => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${row.client.name}</td>
             <td>${row.rewrite.standard || ""}</td>
             <td>${row.rewrite.notes || ""}</td>
           `;
-          recentTableBody.appendChild(tr);
-        }
+          tbody.appendChild(tr);
+        });
       } catch (err) {
         console.error(err);
-        recentTableBody.innerHTML = `<tr><td colspan="3">Error loading recent entries</td></tr>`;
       }
     }
 
-    async function loadAuditLog() {
-      if (!authToken || userRole !== "admin") {
+    async function rewriteOnly() {
+      if (!authToken) {
+        document.getElementById("status").textContent = "Please log in first.";
         return;
       }
+
+      const original = document.getElementById("original").value.trim();
+      const hours = parseFloat(document.getElementById("hours").value || "0");
+
+      if (!original) {
+        document.getElementById("status").textContent = "Please enter an original narrative.";
+        return;
+      }
+
+      let rules = null;
+      const rulesText = document.getElementById("rules").value.trim();
+      if (rulesText) {
+        try {
+          rules = JSON.parse(rulesText);
+        } catch (e) {
+          document.getElementById("status").textContent = "Rules JSON is invalid.";
+          return;
+        }
+      }
+
+      document.getElementById("status").textContent = "Rewriting...";
+      document.getElementById("outStandard").textContent = "";
+      document.getElementById("outClient").textContent = "";
+      document.getElementById("outAudit").textContent = "";
+      document.getElementById("outNotes").textContent = "";
+
+      try {
+        const res = await fetch(`${API_BASE}/rewrites/rewrite`, {
+          method: "POST",
+          headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ original, hours, rules })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        document.getElementById("outStandard").textContent = data.standard || "";
+        document.getElementById("outClient").textContent = data.client_compliant || "";
+        document.getElementById("outAudit").textContent = data.audit_safe || "";
+        document.getElementById("outNotes").textContent = data.notes || "";
+        document.getElementById("status").textContent = "Rewrite complete.";
+      } catch (err) {
+        console.error(err);
+        document.getElementById("status").textContent = "Error: " + err.message;
+      }
+    }
+
+    async function rewriteAndSave() {
+      if (!authToken) {
+        document.getElementById("status").textContent = "Please log in first.";
+        return;
+      }
+
+      const original = document.getElementById("original").value.trim();
+      const hours = parseFloat(document.getElementById("hours").value || "0");
+      const clientId = document.getElementById("clientSelect").value;
+
+      if (!clientId) {
+        document.getElementById("status").textContent = "Please select a client.";
+        return;
+      }
+      if (!original) {
+        document.getElementById("status").textContent = "Please enter an original narrative.";
+        return;
+      }
+
+      document.getElementById("status").textContent = "Rewriting and saving...";
+      document.getElementById("outStandard").textContent = "";
+      document.getElementById("outClient").textContent = "";
+      document.getElementById("outAudit").textContent = "";
+      document.getElementById("outNotes").textContent = "";
+
+      try {
+        const res = await fetch(`${API_BASE}/rewrites/rewrite-and-save`, {
+          method: "POST",
+          headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ client_id: clientId, original, hours })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        document.getElementById("outStandard").textContent = data.rewrite.standard || "";
+        document.getElementById("outClient").textContent = data.rewrite.client_compliant || "";
+        document.getElementById("outAudit").textContent = data.rewrite.audit_safe || "";
+        document.getElementById("outNotes").textContent = data.rewrite.notes || "";
+        document.getElementById("status").textContent = "Rewrite saved successfully.";
+
+        loadRecentEntries();
+        loadDashboard();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("status").textContent = "Error: " + err.message;
+      }
+    }
+
+    // ========== AUDIT ==========
+
+    async function loadAudit() {
+      if (!authToken || userRole !== "admin") return;
 
       try {
         const res = await fetch(`${API_BASE}/admin/audit-events?limit=50`, {
           headers: buildAuthHeaders(),
         });
+
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
 
         const rows = await res.json();
-        auditTableBody.innerHTML = "";
+        const tbody = document.getElementById("auditTableBody");
+        tbody.innerHTML = "";
 
         if (!rows.length) {
-          auditTableBody.innerHTML = `<tr><td colspan="3">No audit events yet.</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No audit events yet</td></tr>';
           return;
         }
 
-        for (const row of rows) {
+        rows.forEach(row => {
           const when = new Date(row.timestamp).toLocaleString();
           const tr = document.createElement("tr");
           tr.innerHTML = `
+            <td>${when}</td>
             <td>
-              <div><strong>${row.username}</strong> <span class="badge">${row.role}</span></div>
-              <div class="small">${when}</div>
+              ${row.username}
+              <span class="badge badge-${row.role}">${row.role}</span>
             </td>
-            <td>
-              <div><strong>${row.client.name}</strong></div>
-              <div class="small">${row.original}</div>
-            </td>
-            <td>
-              <div>${row.standard}</div>
-            </td>
+            <td>${row.client.name}</td>
+            <td>${row.original.substring(0, 80)}...</td>
+            <td>${row.standard.substring(0, 80)}...</td>
           `;
-          auditTableBody.appendChild(tr);
-        }
-      } catch (err) {
-        console.error(err);
-        auditTableBody.innerHTML = `<tr><td colspan="3" class="badge-danger">Error loading audit log: ${err.message}</td></tr>`;
-      }
-    }
-
-    async function rewriteOnly() {
-      if (!authToken) {
-        statusEl.textContent = "Please log in first.";
-        return;
-      }
-
-      const original = originalInput.value.trim();
-      const hours = parseFloat(hoursInput.value || "0");
-
-      if (!original) {
-        statusEl.textContent = "Please enter an original narrative.";
-        return;
-      }
-
-      let rules = null;
-      const rulesText = rulesInput.value.trim();
-      if (rulesText) {
-        try {
-          rules = JSON.parse(rulesText);
-        } catch (e) {
-          statusEl.textContent = "Rules JSON is invalid.";
-          return;
-        }
-      }
-
-      statusEl.textContent = "Rewriting...";
-      outStandard.textContent = "";
-      outClient.textContent = "";
-      outAudit.textContent = "";
-      outNotes.textContent = "";
-
-      try {
-        const res = await fetch(`${API_BASE}/rewrites/rewrite`, {
-          method: "POST",
-          headers: buildAuthHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify({
-            original,
-            hours,
-            rules
-          })
+          tbody.appendChild(tr);
         });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.detail || `HTTP ${res.status}`);
-        }
-
-        const data = await res.json();
-        outStandard.textContent = data.standard || "";
-        outClient.textContent = data.client_compliant || "";
-        outAudit.textContent = data.audit_safe || "";
-        outNotes.textContent = data.notes || "";
-        statusEl.textContent = "Rewrite complete.";
       } catch (err) {
         console.error(err);
-        statusEl.textContent = "Error: " + err.message;
       }
     }
 
-    async function rewriteAndSave() {
-      if (!authToken) {
-        statusEl.textContent = "Please log in first.";
-        return;
-      }
-
-      const original = originalInput.value.trim();
-      const hours = parseFloat(hoursInput.value || "0");
-      const clientId = clientSelect.value;
-
-      if (!clientId) {
-        statusEl.textContent = "Please select a client.";
-        return;
-      }
-      if (!original) {
-        statusEl.textContent = "Please enter an original narrative.";
-        return;
-      }
-
-      statusEl.textContent = "Rewriting and saving...";
-      outStandard.textContent = "";
-      outClient.textContent = "";
-      outAudit.textContent = "";
-      outNotes.textContent = "";
-
-      try {
-        const res = await fetch(`${API_BASE}/rewrites/rewrite-and-save`, {
-          method: "POST",
-          headers: buildAuthHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify({
-            client_id: clientId,
-            original,
-            hours
-          })
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.detail || `HTTP ${res.status}`);
-        }
-
-        const data = await res.json();
-        outStandard.textContent = data.rewrite.standard || "";
-        outClient.textContent = data.rewrite.client_compliant || "";
-        outAudit.textContent = data.rewrite.audit_safe || "";
-        outNotes.textContent = data.rewrite.notes || "";
-        statusEl.textContent = "Rewrite saved.";
-        loadRecentEntries();
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "Error: " + err.message;
-      }
-    }
-
-    // ===== Admin Clients UI =====
-
-    function clearAdminClientForm() {
-      adminClientIdInput.value = "";
-      adminClientNameInput.value = "";
-      adminClientCodeInput.value = "";
-      adminClientGuidelinesInput.value = "";
-      adminClientAcceptedInput.value = "";
-      adminClientDeniedInput.value = "";
-      adminClientStatus.textContent = "";
-    }
+    // ========== CLIENT MANAGEMENT ==========
 
     async function loadAdminClients() {
-      if (!authToken || userRole !== "admin") {
-        adminClientStatus.textContent = "Admin login required.";
-        return;
-      }
+      if (!authToken || userRole !== "admin") return;
+
       try {
         const res = await fetch(`${API_BASE}/admin/clients`, {
           headers: buildAuthHeaders(),
         });
+
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
 
         const clients = await res.json();
-        adminClientTableBody.innerHTML = "";
+        const tbody = document.getElementById("adminClientTableBody");
+        tbody.innerHTML = "";
 
         if (!clients.length) {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td colspan="3">No clients yet.</td>`;
-          adminClientTableBody.appendChild(tr);
+          tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">No clients yet</td></tr>';
           return;
         }
 
-        for (const c of clients) {
+        clients.forEach(c => {
           const tr = document.createElement("tr");
           tr.style.cursor = "pointer";
           tr.innerHTML = `
-            <td style="width:25%;">${c.id}</td>
-            <td style="width:45%;">${c.name}</td>
-            <td style="width:30%;">${c.code || ""}</td>
+            <td>${c.id}</td>
+            <td>${c.name}</td>
           `;
           tr.addEventListener("click", () => {
-            populateAdminClientForm(c);
+            populateClientForm(c);
           });
-          adminClientTableBody.appendChild(tr);
-        }
+          tbody.appendChild(tr);
+        });
       } catch (err) {
         console.error(err);
-        adminClientTableBody.innerHTML = `<tr><td colspan="3">Error loading clients: ${err.message}</td></tr>`;
       }
     }
 
-    function populateAdminClientForm(c) {
-      adminClientIdInput.value = c.id;
-      adminClientNameInput.value = c.name || "";
-      adminClientCodeInput.value = c.code || "";
-      adminClientGuidelinesInput.value = c.billing_guidelines || "";
-      adminClientAcceptedInput.value = c.accepted_examples || "";
-      adminClientDeniedInput.value = c.denied_examples || "";
-      adminClientStatus.textContent = `Loaded client ${c.id}.`;
+    function populateClientForm(c) {
+      document.getElementById("adminClientId").value = c.id;
+      document.getElementById("adminClientName").value = c.name || "";
+      document.getElementById("adminClientCode").value = c.code || "";
+      document.getElementById("adminClientGuidelines").value = c.billing_guidelines || "";
+      document.getElementById("adminClientAccepted").value = c.accepted_examples || "";
+      document.getElementById("adminClientDenied").value = c.denied_examples || "";
+      document.getElementById("adminClientStatus").textContent = `Loaded client ${c.id}.`;
     }
 
-    async function saveAdminClient() {
-      if (!authToken || userRole !== "admin") {
-        adminClientStatus.textContent = "Admin login required.";
-        return;
-      }
+    function clearClientForm() {
+      document.getElementById("adminClientId").value = "";
+      document.getElementById("adminClientName").value = "";
+      document.getElementById("adminClientCode").value = "";
+      document.getElementById("adminClientGuidelines").value = "";
+      document.getElementById("adminClientAccepted").value = "";
+      document.getElementById("adminClientDenied").value = "";
+      document.getElementById("adminClientStatus").textContent = "";
+    }
 
-      const id = adminClientIdInput.value.trim();
-      const name = adminClientNameInput.value.trim();
-      const code = adminClientCodeInput.value.trim();
-      const guidelines = adminClientGuidelinesInput.value.trim();
-      const accepted = adminClientAcceptedInput.value.trim();
-      const denied = adminClientDeniedInput.value.trim();
+    async function saveClient() {
+      if (!authToken || userRole !== "admin") return;
+
+      const id = document.getElementById("adminClientId").value.trim();
+      const name = document.getElementById("adminClientName").value.trim();
+      const code = document.getElementById("adminClientCode").value.trim();
+      const guidelines = document.getElementById("adminClientGuidelines").value.trim();
+      const accepted = document.getElementById("adminClientAccepted").value.trim();
+      const denied = document.getElementById("adminClientDenied").value.trim();
 
       if (!id || !name) {
-        adminClientStatus.textContent = "Client ID and Name are required.";
+        document.getElementById("adminClientStatus").textContent = "Client ID and Name are required.";
         return;
       }
 
@@ -1312,29 +1829,29 @@
       const url = `${API_BASE}/admin/clients/${encodeURIComponent(id)}`;
 
       try {
-        adminClientStatus.textContent = "Saving client...";
-        const bodyPayload = payload;
+        document.getElementById("adminClientStatus").textContent = "Saving client...";
 
         const res = await fetch(url, {
           method,
           headers: buildAuthHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify(bodyPayload),
+          body: JSON.stringify(payload),
         });
 
-        // If client doesn't exist yet, fallback to POST create
         if (res.status === 404) {
           const createRes = await fetch(`${API_BASE}/admin/clients`, {
             method: "POST",
             headers: buildAuthHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ id, ...payload }),
           });
+
           if (!createRes.ok) {
             const err2 = await createRes.json().catch(() => ({}));
             throw new Error(err2.detail || `HTTP ${createRes.status}`);
           }
+
           const saved2 = await createRes.json();
-          populateAdminClientForm(saved2);
-          adminClientStatus.textContent = "Client created.";
+          populateClientForm(saved2);
+          document.getElementById("adminClientStatus").textContent = "Client created.";
           loadClients();
           loadAdminClients();
           return;
@@ -1346,25 +1863,22 @@
         }
 
         const saved = await res.json();
-        populateAdminClientForm(saved);
-        adminClientStatus.textContent = "Client saved.";
+        populateClientForm(saved);
+        document.getElementById("adminClientStatus").textContent = "Client saved.";
         loadClients();
         loadAdminClients();
       } catch (err) {
         console.error(err);
-        adminClientStatus.textContent = "Error saving client: " + err.message;
+        document.getElementById("adminClientStatus").textContent = "Error: " + err.message;
       }
     }
 
-    async function deleteAdminClient() {
-      if (!authToken || userRole !== "admin") {
-        adminClientStatus.textContent = "Admin login required.";
-        return;
-      }
+    async function deleteClient() {
+      if (!authToken || userRole !== "admin") return;
 
-      const id = adminClientIdInput.value.trim();
+      const id = document.getElementById("adminClientId").value.trim();
       if (!id) {
-        adminClientStatus.textContent = "Select a client to delete.";
+        document.getElementById("adminClientStatus").textContent = "Select a client to delete.";
         return;
       }
 
@@ -1373,7 +1887,8 @@
       }
 
       try {
-        adminClientStatus.textContent = "Deleting client...";
+        document.getElementById("adminClientStatus").textContent = "Deleting client...";
+
         const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(id)}`, {
           method: "DELETE",
           headers: buildAuthHeaders(),
@@ -1384,46 +1899,73 @@
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
 
-        adminClientStatus.textContent = "Client deleted.";
-        clearAdminClientForm();
+        document.getElementById("adminClientStatus").textContent = "Client deleted.";
+        clearClientForm();
         loadClients();
         loadAdminClients();
       } catch (err) {
         console.error(err);
-        adminClientStatus.textContent = "Error deleting client: " + err.message;
+        document.getElementById("adminClientStatus").textContent = "Error: " + err.message;
       }
     }
 
-    // ---- Event wiring ----
-    loginBtn.addEventListener("click", login);
-    runBtn.addEventListener("click", rewriteOnly);
-    saveBtn.addEventListener("click", rewriteAndSave);
-    logoutLink.addEventListener("click", switchToLogin);
+    // ========== EVENT LISTENERS ==========
 
-    navRewrite.addEventListener("click", () => {
+    document.getElementById("loginBtn").addEventListener("click", login);
+    document.getElementById("logoutBtn").addEventListener("click", switchToLogin);
+
+    // Navigation
+    document.getElementById("navDashboard").addEventListener("click", () => {
+      setActiveView("dashboard");
+      loadDashboard();
+    });
+
+    document.getElementById("navRewrite").addEventListener("click", () => {
       setActiveView("rewrite");
     });
 
-    navAudit.addEventListener("click", () => {
+    document.getElementById("navAudit").addEventListener("click", () => {
       if (userRole !== "admin") return;
       setActiveView("audit");
-      loadAuditLog();
+      loadAudit();
     });
 
-    navClients.addEventListener("click", () => {
+    document.getElementById("navClients").addEventListener("click", () => {
       if (userRole !== "admin") return;
       setActiveView("clients");
       loadAdminClients();
     });
 
-    loadAuditBtn.addEventListener("click", loadAuditLog);
-    adminClientsRefreshBtn.addEventListener("click", loadAdminClients);
-    adminClientNewBtn.addEventListener("click", clearAdminClientForm);
-    adminClientSaveBtn.addEventListener("click", saveAdminClient);
-    adminClientDeleteBtn.addEventListener("click", deleteAdminClient);
+    // Rewrite
+    document.getElementById("runBtn").addEventListener("click", rewriteOnly);
+    document.getElementById("saveBtn").addEventListener("click", rewriteAndSave);
 
-    document.addEventListener("DOMContentLoaded", () => {
-      // load after login
+    // Audit
+    document.getElementById("loadAuditBtn").addEventListener("click", loadAudit);
+
+    // Clients
+    document.getElementById("adminClientNewBtn").addEventListener("click", clearClientForm);
+    document.getElementById("adminClientSaveBtn").addEventListener("click", saveClient);
+    document.getElementById("adminClientDeleteBtn").addEventListener("click", deleteClient);
+
+    // Tabs
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        const tabName = tab.dataset.tab;
+
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+
+        tab.classList.add("active");
+        document.getElementById("tab" + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add("active");
+      });
+    });
+
+    // Allow Enter key to login
+    document.getElementById("password").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        login();
+      }
     });
   </script>
 </body>
