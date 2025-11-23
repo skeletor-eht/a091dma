@@ -7,17 +7,22 @@ from app.routers import clients as clients_router
 from app.routers import rewrites as rewrites_router
 from app.routers import admin as admin_router
 from app.models import seed_demo_clients_and_admin  # ensures demo data
+from app.config import settings
 
 # Create DB tables
 Base.metadata.create_all(bind=engine)
 seed_demo_clients_and_admin()
 
-app = FastAPI(title="AI Time Entry Rewrite (Scaffolded)")
+app = FastAPI(
+    title=settings.app_name,
+    version=settings.app_version,
+    debug=settings.debug
+)
 
-# CORS for your browser UI
+# CORS configuration - now using environment-based origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten later
+    allow_origins=settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 pydantic>=2.0
+pydantic-settings>=2.0
 httpx
 sqlalchemy
 passlib[bcrypt]
@@ -8,3 +9,4 @@ python-jose[cryptography]
 bcrypt==3.2.2
 python-multipart
 pypdf
+python-dotenv
