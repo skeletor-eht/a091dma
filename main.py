@@ -1,5 +1,8 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 
 from app.db import Base, engine
 from app.routers import auth as auth_router
@@ -37,3 +40,15 @@ app.include_router(admin_router.router, prefix="/admin", tags=["admin"])
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/")
+def read_root():
+    """Serve the index.html file at the root path."""
+    return FileResponse("index.html")
+
+
+@app.get("/index.html")
+def read_index():
+    """Serve the index.html file."""
+    return FileResponse("index.html")
