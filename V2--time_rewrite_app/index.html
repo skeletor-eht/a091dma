@@ -862,7 +862,7 @@
         <aside class="sidebar">
           <div class="nav-section">
             <div class="nav-section-label">Main</div>
-            <div id="navDashboard" class="nav-item active">
+            <div id="navDashboard" class="nav-item active" style="display: none;">
               <span class="nav-icon">📊</span>
               <span>Dashboard</span>
             </div>
@@ -1256,7 +1256,7 @@
             <div style="display: grid; grid-template-columns: 500px 1fr; gap: 24px;">
               <!-- User List -->
               <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px;">
                   <h3 class="card-title" style="margin: 0;">Users</h3>
                   <button id="adminUserNewBtn" class="btn btn-primary" style="width: auto; padding: 8px 16px;">
                     New User
@@ -1367,6 +1367,7 @@
       document.getElementById("appScreen").style.display = "none";
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("adminNav").style.display = "none";
+      document.getElementById("navDashboard").style.display = "none";
       showLoginStatus("", false);
     }
 
@@ -1423,16 +1424,24 @@
 
         if (userRole === "admin") {
           document.getElementById("adminNav").style.display = "block";
+          document.getElementById("navDashboard").style.display = "flex";
         } else {
           document.getElementById("adminNav").style.display = "none";
+          document.getElementById("navDashboard").style.display = "none";
         }
 
         showLoginStatus("");
         switchToApp();
-        setActiveView("dashboard");
+
+        // Set default view based on role
+        if (userRole === "admin") {
+          setActiveView("dashboard");
+          loadDashboard();
+        } else {
+          setActiveView("rewrite");
+        }
 
         loadClients();
-        loadDashboard();
         loadRecentEntries();
       } catch (err) {
         console.error(err);
@@ -2290,8 +2299,15 @@
       document.getElementById("adminUserPassword").value = "";
       document.getElementById("adminUserRole").value = "user";
       document.getElementById("adminUserActive").checked = true;
-      document.getElementById("adminUserPermissionsContainer").innerHTML =
-        '<div style="color: var(--text-muted); text-align: center;">Select a user to manage permissions</div>';
+
+      // Render permission checkboxes with none selected (for new user creation)
+      if (allClients && allClients.length > 0) {
+        renderUserPermissions([]);
+      } else {
+        document.getElementById("adminUserPermissionsContainer").innerHTML =
+          '<div style="color: var(--text-muted); text-align: center;">Loading clients...</div>';
+      }
+
       document.getElementById("adminUserStatus").textContent = "";
     }
 
