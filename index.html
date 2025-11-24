@@ -1035,6 +1035,135 @@
       background: #dc2626;
     }
 
+    /* ---------- MODAL ---------- */
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .modal-header {
+      padding: var(--space-6) var(--space-8);
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      border: none;
+      background: var(--gray-100);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all var(--transition-fast);
+      padding: 0;
+      margin: 0;
+    }
+
+    .modal-close:hover {
+      background: var(--gray-200);
+      color: var(--text-primary);
+      transform: none;
+    }
+
+    .modal-body {
+      padding: var(--space-8);
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: var(--space-6) var(--space-8);
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      gap: var(--space-3);
+      justify-content: flex-end;
+      background: var(--gray-50);
+    }
+
+    .modal-footer button {
+      margin-top: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: var(--space-5);
+    }
+
+    .action-btn {
+      padding: var(--space-2) var(--space-3);
+      border: none;
+      background: transparent;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-fast);
+      margin: 0;
+      height: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .action-btn:hover {
+      background: var(--accent-soft);
+      transform: none;
+      box-shadow: none;
+    }
+
+    .action-btn.danger {
+      color: var(--danger);
+    }
+
+    .action-btn.danger:hover {
+      background: var(--danger-soft);
+    }
+
   </style>
 </head>
 <body>
@@ -1242,98 +1371,115 @@
             <!-- Admin Clients View -->
             <section id="view-admin-clients" class="view">
               <div class="center-wrap single">
-                <section class="pane" style="flex:1; display:flex; gap:16px; overflow:hidden;">
-                  <!-- Left: client list -->
-                  <div style="flex:0 0 38%; display:flex; flex-direction:column;">
-                    <div class="section-title">
-                      Clients
-                      <span class="pill-muted">Admin</span>
+                <section class="pane" style="flex:1; overflow:hidden;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6);">
+                    <div class="section-title" style="margin-bottom: 0;">
+                      Clients Management
+                      <span class="badge">Admin only</span>
                     </div>
-                    <div class="button-row" style="margin-top:6px;">
-                      <button id="adminClientsRefreshBtn" class="secondary small">Refresh</button>
-                      <button id="adminClientNewBtn" class="small">New</button>
-                    </div>
-                    <div class="table-scroll" style="margin-top:10px;">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th style="width:25%;">ID</th>
-                            <th style="width:45%;">Name</th>
-                            <th style="width:30%;">Code</th>
-                          </tr>
-                        </thead>
-                        <tbody id="adminClientTableBody">
-                          <!-- rows injected -->
-                        </tbody>
-                      </table>
-                    </div>
+                    <button id="adminClientNewBtn" class="small">+ New Client</button>
                   </div>
 
-                  <!-- Right: client detail form -->
-                  <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
-                    <div class="section-title">
-                      Client Details
-                      <span class="pill-muted">Guidelines &amp; examples</span>
-                    </div>
-
-                    <label for="adminClientId">Client ID</label>
-                    <input id="adminClientId" placeholder="e.g., C004">
-
-                    <label for="adminClientName">Client Name</label>
-                    <input id="adminClientName" placeholder="Client Name">
-
-                    <label for="adminClientCode">Client Code</label>
-                    <input id="adminClientCode" placeholder="Billing code (optional)">
-
-                    <label for="adminClientGuidelines">Billing Guidelines</label>
-                    <textarea id="adminClientGuidelines" rows="4"
-                      placeholder="Paste key billing guidelines or a concise summary here..."></textarea>
-
-                    <div class="upload-section">
-                      <div class="upload-section-title">📄 Upload Guidelines PDF</div>
-                      <div class="file-input-wrapper">
-                        <input type="file" id="guidelinesFileInput" accept=".pdf">
-                      </div>
-                      <button class="upload-btn" id="uploadGuidelinesBtn">Upload & Extract Text</button>
-                      <div class="upload-hint">Upload a PDF to automatically extract and populate guidelines</div>
-                    </div>
-
-                    <label for="adminClientAccepted">Accepted Examples (line-separated)</label>
-                    <textarea id="adminClientAccepted" rows="3"
-                      placeholder="Example: Reviewed and analyzed client correspondence regarding lease dispute and prepared summary.&#10;Example: Drafted motion to compel and supporting memorandum."></textarea>
-
-                    <div class="upload-section">
-                      <div class="upload-section-title">✅ Upload Accepted Examples PDF</div>
-                      <div class="file-input-wrapper">
-                        <input type="file" id="acceptedFileInput" accept=".pdf">
-                      </div>
-                      <button class="upload-btn" id="uploadAcceptedBtn">Upload & Extract Text</button>
-                      <div class="upload-hint">Upload a PDF with successful billing examples</div>
-                    </div>
-
-                    <label for="adminClientDenied">Denied Examples (line-separated)</label>
-                    <textarea id="adminClientDenied" rows="3"
-                      placeholder="Example: emails&#10;Example: work on case"></textarea>
-
-                    <div class="upload-section">
-                      <div class="upload-section-title">❌ Upload Denied Examples PDF</div>
-                      <div class="file-input-wrapper">
-                        <input type="file" id="deniedFileInput" accept=".pdf">
-                      </div>
-                      <button class="upload-btn" id="uploadDeniedBtn">Upload & Extract Text</button>
-                      <div class="upload-hint">Upload a PDF with examples of billing entries to avoid</div>
-                    </div>
-
-                    <div class="button-row">
-                      <button id="adminClientSaveBtn">Save Client</button>
-                      <button id="adminClientDeleteBtn" class="danger">Delete Client</button>
-                    </div>
-                    <div id="adminClientStatus" class="status"></div>
+                  <div style="overflow:auto;">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th style="width:15%;">ID</th>
+                          <th style="width:30%;">Name</th>
+                          <th style="width:15%;">Code</th>
+                          <th style="width:25%;">Guidelines</th>
+                          <th style="width:15%;">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminClientTableBody">
+                        <!-- rows injected -->
+                      </tbody>
+                    </table>
                   </div>
                 </section>
               </div>
             </section>
           </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- Client Modal -->
+    <div id="clientModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title" id="modalTitle">New Client</div>
+          <button class="modal-close" id="modalCloseBtn">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div>
+              <label for="modalClientId">Client ID *</label>
+              <input id="modalClientId" placeholder="e.g., C004">
+            </div>
+
+            <div>
+              <label for="modalClientName">Client Name *</label>
+              <input id="modalClientName" placeholder="Client Name">
+            </div>
+
+            <div>
+              <label for="modalClientCode">Client Code</label>
+              <input id="modalClientCode" placeholder="Billing code (optional)">
+            </div>
+
+            <div>
+              <label for="modalClientGuidelines">Billing Guidelines</label>
+              <textarea id="modalClientGuidelines" rows="4"
+                placeholder="Paste key billing guidelines or a concise summary here..."></textarea>
+            </div>
+
+            <div class="upload-section">
+              <div class="upload-section-title">📄 Upload Guidelines PDF</div>
+              <div class="file-input-wrapper">
+                <input type="file" id="modalGuidelinesFileInput" accept=".pdf">
+              </div>
+              <button class="upload-btn" id="modalUploadGuidelinesBtn">Upload & Extract Text</button>
+              <div class="upload-hint">Upload a PDF to automatically extract and populate guidelines</div>
+            </div>
+
+            <div>
+              <label for="modalClientAccepted">Accepted Examples (line-separated)</label>
+              <textarea id="modalClientAccepted" rows="3"
+                placeholder="Example: Reviewed and analyzed client correspondence regarding lease dispute and prepared summary.&#10;Example: Drafted motion to compel and supporting memorandum."></textarea>
+            </div>
+
+            <div class="upload-section">
+              <div class="upload-section-title">✅ Upload Accepted Examples PDF</div>
+              <div class="file-input-wrapper">
+                <input type="file" id="modalAcceptedFileInput" accept=".pdf">
+              </div>
+              <button class="upload-btn" id="modalUploadAcceptedBtn">Upload & Extract Text</button>
+              <div class="upload-hint">Upload a PDF with successful billing examples</div>
+            </div>
+
+            <div>
+              <label for="modalClientDenied">Denied Examples (line-separated)</label>
+              <textarea id="modalClientDenied" rows="3"
+                placeholder="Example: emails&#10;Example: work on case"></textarea>
+            </div>
+
+            <div class="upload-section">
+              <div class="upload-section-title">❌ Upload Denied Examples PDF</div>
+              <div class="file-input-wrapper">
+                <input type="file" id="modalDeniedFileInput" accept=".pdf">
+              </div>
+              <button class="upload-btn" id="modalUploadDeniedBtn">Upload & Extract Text</button>
+              <div class="upload-hint">Upload a PDF with examples of billing entries to avoid</div>
+            </div>
+
+            <div id="modalStatus" class="status"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="modalCancelBtn" class="secondary">Cancel</button>
+          <button id="modalDeleteBtn" class="danger" style="display: none;">Delete Client</button>
+          <button id="modalSaveBtn">Save Client</button>
         </div>
       </div>
     </div>
@@ -1387,18 +1533,25 @@
     const auditTableBody = document.getElementById("auditTableBody");
 
     // Admin clients
-    const adminClientsRefreshBtn = document.getElementById("adminClientsRefreshBtn");
     const adminClientNewBtn = document.getElementById("adminClientNewBtn");
     const adminClientTableBody = document.getElementById("adminClientTableBody");
-    const adminClientIdInput = document.getElementById("adminClientId");
-    const adminClientNameInput = document.getElementById("adminClientName");
-    const adminClientCodeInput = document.getElementById("adminClientCode");
-    const adminClientGuidelinesInput = document.getElementById("adminClientGuidelines");
-    const adminClientAcceptedInput = document.getElementById("adminClientAccepted");
-    const adminClientDeniedInput = document.getElementById("adminClientDenied");
-    const adminClientSaveBtn = document.getElementById("adminClientSaveBtn");
-    const adminClientDeleteBtn = document.getElementById("adminClientDeleteBtn");
-    const adminClientStatus = document.getElementById("adminClientStatus");
+
+    // Modal elements
+    const clientModal = document.getElementById("clientModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalCloseBtn = document.getElementById("modalCloseBtn");
+    const modalCancelBtn = document.getElementById("modalCancelBtn");
+    const modalSaveBtn = document.getElementById("modalSaveBtn");
+    const modalDeleteBtn = document.getElementById("modalDeleteBtn");
+    const modalClientIdInput = document.getElementById("modalClientId");
+    const modalClientNameInput = document.getElementById("modalClientName");
+    const modalClientCodeInput = document.getElementById("modalClientCode");
+    const modalClientGuidelinesInput = document.getElementById("modalClientGuidelines");
+    const modalClientAcceptedInput = document.getElementById("modalClientAccepted");
+    const modalClientDeniedInput = document.getElementById("modalClientDenied");
+    const modalStatus = document.getElementById("modalStatus");
+
+    let currentEditingClientId = null;
 
     function buildAuthHeaders(base = {}) {
       const headers = { ...base };
@@ -1776,19 +1929,44 @@
 
     // ===== Admin Clients UI =====
 
-    function clearAdminClientForm() {
-      adminClientIdInput.value = "";
-      adminClientNameInput.value = "";
-      adminClientCodeInput.value = "";
-      adminClientGuidelinesInput.value = "";
-      adminClientAcceptedInput.value = "";
-      adminClientDeniedInput.value = "";
-      adminClientStatus.textContent = "";
+    // Modal functions
+    function openClientModal(clientData = null) {
+      if (clientData) {
+        // Edit mode
+        modalTitle.textContent = "Edit Client";
+        modalClientIdInput.value = clientData.id;
+        modalClientIdInput.disabled = true;
+        modalClientNameInput.value = clientData.name || "";
+        modalClientCodeInput.value = clientData.code || "";
+        modalClientGuidelinesInput.value = clientData.billing_guidelines || "";
+        modalClientAcceptedInput.value = clientData.accepted_examples || "";
+        modalClientDeniedInput.value = clientData.denied_examples || "";
+        modalDeleteBtn.style.display = "block";
+        currentEditingClientId = clientData.id;
+      } else {
+        // New mode
+        modalTitle.textContent = "New Client";
+        modalClientIdInput.value = "";
+        modalClientIdInput.disabled = false;
+        modalClientNameInput.value = "";
+        modalClientCodeInput.value = "";
+        modalClientGuidelinesInput.value = "";
+        modalClientAcceptedInput.value = "";
+        modalClientDeniedInput.value = "";
+        modalDeleteBtn.style.display = "none";
+        currentEditingClientId = null;
+      }
+      modalStatus.textContent = "";
+      clientModal.classList.add("active");
+    }
+
+    function closeClientModal() {
+      clientModal.classList.remove("active");
+      currentEditingClientId = null;
     }
 
     async function loadAdminClients() {
       if (!authToken || userRole !== "admin") {
-        adminClientStatus.textContent = "Admin login required.";
         return;
       }
       try {
@@ -1805,55 +1983,91 @@
 
         if (!clients.length) {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td colspan="3">No clients yet.</td>`;
+          tr.innerHTML = `<td colspan="5" style="text-align: center; color: var(--text-tertiary);">No clients yet. Click "New Client" to add one.</td>`;
           adminClientTableBody.appendChild(tr);
           return;
         }
 
         for (const c of clients) {
           const tr = document.createElement("tr");
-          tr.style.cursor = "pointer";
+          const guidelinesPreview = c.billing_guidelines
+            ? (c.billing_guidelines.substring(0, 50) + (c.billing_guidelines.length > 50 ? "..." : ""))
+            : "-";
+
           tr.innerHTML = `
-            <td style="width:25%;">${c.id}</td>
-            <td style="width:45%;">${c.name}</td>
-            <td style="width:30%;">${c.code || ""}</td>
+            <td>${c.id}</td>
+            <td>${c.name}</td>
+            <td>${c.code || "-"}</td>
+            <td>${guidelinesPreview}</td>
+            <td>
+              <button class="action-btn" onclick="editClient('${c.id}')">✏️ Edit</button>
+              <button class="action-btn danger" onclick="deleteClient('${c.id}')">🗑️ Delete</button>
+            </td>
           `;
-          tr.addEventListener("click", () => {
-            populateAdminClientForm(c);
-          });
           adminClientTableBody.appendChild(tr);
         }
       } catch (err) {
         console.error(err);
-        adminClientTableBody.innerHTML = `<tr><td colspan="3">Error loading clients: ${err.message}</td></tr>`;
+        adminClientTableBody.innerHTML = `<tr><td colspan="5">Error loading clients: ${err.message}</td></tr>`;
       }
     }
 
-    function populateAdminClientForm(c) {
-      adminClientIdInput.value = c.id;
-      adminClientNameInput.value = c.name || "";
-      adminClientCodeInput.value = c.code || "";
-      adminClientGuidelinesInput.value = c.billing_guidelines || "";
-      adminClientAcceptedInput.value = c.accepted_examples || "";
-      adminClientDeniedInput.value = c.denied_examples || "";
-      adminClientStatus.textContent = `Loaded client ${c.id}.`;
+    async function editClient(clientId) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/clients`, {
+          headers: buildAuthHeaders(),
+        });
+        const clients = await res.json();
+        const client = clients.find(c => c.id === clientId);
+        if (client) {
+          openClientModal(client);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error loading client: " + err.message);
+      }
     }
 
-    async function saveAdminClient() {
-      if (!authToken || userRole !== "admin") {
-        adminClientStatus.textContent = "Admin login required.";
+    async function deleteClient(clientId) {
+      if (!confirm(`Delete client ${clientId}? This cannot be undone.`)) {
         return;
       }
 
-      const id = adminClientIdInput.value.trim();
-      const name = adminClientNameInput.value.trim();
-      const code = adminClientCodeInput.value.trim();
-      const guidelines = adminClientGuidelinesInput.value.trim();
-      const accepted = adminClientAcceptedInput.value.trim();
-      const denied = adminClientDeniedInput.value.trim();
+      try {
+        const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(clientId)}`, {
+          method: "DELETE",
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        alert("Client deleted successfully");
+        loadClients();
+        loadAdminClients();
+      } catch (err) {
+        console.error(err);
+        alert("Error deleting client: " + err.message);
+      }
+    }
+
+    async function saveModalClient() {
+      if (!authToken || userRole !== "admin") {
+        modalStatus.textContent = "Admin login required.";
+        return;
+      }
+
+      const id = modalClientIdInput.value.trim();
+      const name = modalClientNameInput.value.trim();
+      const code = modalClientCodeInput.value.trim();
+      const guidelines = modalClientGuidelinesInput.value.trim();
+      const accepted = modalClientAcceptedInput.value.trim();
+      const denied = modalClientDeniedInput.value.trim();
 
       if (!id || !name) {
-        adminClientStatus.textContent = "Client ID and Name are required.";
+        modalStatus.textContent = "Client ID and Name are required.";
         return;
       }
 
@@ -1865,36 +2079,33 @@
         denied_examples: denied || null,
       };
 
-      const method = "PUT";
-      const url = `${API_BASE}/admin/clients/${encodeURIComponent(id)}`;
-
       try {
-        adminClientStatus.textContent = "Saving client...";
-        const bodyPayload = payload;
+        modalStatus.textContent = "Saving client...";
 
-        const res = await fetch(url, {
-          method,
-          headers: buildAuthHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify(bodyPayload),
-        });
-
-        // If client doesn't exist yet, fallback to POST create
-        if (res.status === 404) {
-          const createRes = await fetch(`${API_BASE}/admin/clients`, {
+        let res;
+        if (currentEditingClientId) {
+          // Update existing client
+          res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(id)}`, {
+            method: "PUT",
+            headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify(payload),
+          });
+        } else {
+          // Create new client
+          res = await fetch(`${API_BASE}/admin/clients`, {
             method: "POST",
             headers: buildAuthHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ id, ...payload }),
           });
-          if (!createRes.ok) {
-            const err2 = await createRes.json().catch(() => ({}));
-            throw new Error(err2.detail || `HTTP ${createRes.status}`);
-          }
-          const saved2 = await createRes.json();
-          populateAdminClientForm(saved2);
-          adminClientStatus.textContent = "Client created.";
-          loadClients();
-          loadAdminClients();
-          return;
+        }
+
+        // If client doesn't exist yet during update, fallback to POST create
+        if (res.status === 404 && currentEditingClientId) {
+          res = await fetch(`${API_BASE}/admin/clients`, {
+            method: "POST",
+            headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify({ id, ...payload }),
+          });
         }
 
         if (!res.ok) {
@@ -1902,36 +2113,30 @@
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
 
-        const saved = await res.json();
-        populateAdminClientForm(saved);
-        adminClientStatus.textContent = "Client saved.";
-        loadClients();
-        loadAdminClients();
+        modalStatus.textContent = currentEditingClientId ? "Client updated!" : "Client created!";
+        setTimeout(() => {
+          closeClientModal();
+          loadClients();
+          loadAdminClients();
+        }, 1000);
       } catch (err) {
         console.error(err);
-        adminClientStatus.textContent = "Error saving client: " + err.message;
+        modalStatus.textContent = "Error: " + err.message;
       }
     }
 
-    async function deleteAdminClient() {
-      if (!authToken || userRole !== "admin") {
-        adminClientStatus.textContent = "Admin login required.";
+    async function deleteModalClient() {
+      if (!currentEditingClientId) {
         return;
       }
 
-      const id = adminClientIdInput.value.trim();
-      if (!id) {
-        adminClientStatus.textContent = "Select a client to delete.";
-        return;
-      }
-
-      if (!confirm(`Delete client ${id}? This cannot be undone.`)) {
+      if (!confirm(`Delete client ${currentEditingClientId}? This cannot be undone.`)) {
         return;
       }
 
       try {
-        adminClientStatus.textContent = "Deleting client...";
-        const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(id)}`, {
+        modalStatus.textContent = "Deleting client...";
+        const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(currentEditingClientId)}`, {
           method: "DELETE",
           headers: buildAuthHeaders(),
         });
@@ -1941,27 +2146,33 @@
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
 
-        adminClientStatus.textContent = "Client deleted.";
-        clearAdminClientForm();
-        loadClients();
-        loadAdminClients();
+        modalStatus.textContent = "Client deleted!";
+        setTimeout(() => {
+          closeClientModal();
+          loadClients();
+          loadAdminClients();
+        }, 1000);
       } catch (err) {
         console.error(err);
-        adminClientStatus.textContent = "Error deleting client: " + err.message;
+        modalStatus.textContent = "Error: " + err.message;
       }
     }
+
+    // Make functions globally accessible for onclick handlers
+    window.editClient = editClient;
+    window.deleteClient = deleteClient;
 
     // ===== PDF Upload Functions =====
 
     async function uploadPDF(endpoint, fileInputId, textareaId) {
       if (!authToken || userRole !== "admin") {
-        adminClientStatus.textContent = "Admin login required.";
+        modalStatus.textContent = "Admin login required.";
         return;
       }
 
-      const clientId = adminClientIdInput.value.trim();
+      const clientId = modalClientIdInput.value.trim();
       if (!clientId) {
-        adminClientStatus.textContent = "Please load or create a client first.";
+        modalStatus.textContent = "Please enter a client ID first.";
         return;
       }
 
@@ -1969,12 +2180,12 @@
       const file = fileInput.files[0];
 
       if (!file) {
-        adminClientStatus.textContent = "Please select a PDF file first.";
+        modalStatus.textContent = "Please select a PDF file first.";
         return;
       }
 
       if (!file.name.toLowerCase().endsWith('.pdf')) {
-        adminClientStatus.textContent = "Please select a PDF file.";
+        modalStatus.textContent = "Please select a PDF file.";
         return;
       }
 
@@ -1982,7 +2193,7 @@
       formData.append('file', file);
 
       try {
-        adminClientStatus.textContent = `Uploading ${file.name} and extracting text...`;
+        modalStatus.textContent = `Uploading ${file.name} and extracting text...`;
 
         const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(clientId)}/${endpoint}`, {
           method: 'POST',
@@ -2007,21 +2218,21 @@
           const clients = await clientRes.json();
           const updatedClient = clients.find(c => c.id === clientId);
           if (updatedClient) {
-            if (textareaId === 'adminClientGuidelines') {
+            if (textareaId === 'modalClientGuidelines') {
               textarea.value = updatedClient.billing_guidelines || '';
-            } else if (textareaId === 'adminClientAccepted') {
+            } else if (textareaId === 'modalClientAccepted') {
               textarea.value = updatedClient.accepted_examples || '';
-            } else if (textareaId === 'adminClientDenied') {
+            } else if (textareaId === 'modalClientDenied') {
               textarea.value = updatedClient.denied_examples || '';
             }
           }
         }
 
-        adminClientStatus.textContent = data.message || "PDF text extracted successfully!";
+        modalStatus.textContent = data.message || "PDF text extracted successfully!";
         fileInput.value = ''; // Clear file input
       } catch (err) {
         console.error(err);
-        adminClientStatus.textContent = "Error uploading PDF: " + err.message;
+        modalStatus.textContent = "Error uploading PDF: " + err.message;
       }
     }
 
@@ -2048,20 +2259,30 @@
     });
 
     loadAuditBtn.addEventListener("click", loadAuditLog);
-    adminClientsRefreshBtn.addEventListener("click", loadAdminClients);
-    adminClientNewBtn.addEventListener("click", clearAdminClientForm);
-    adminClientSaveBtn.addEventListener("click", saveAdminClient);
-    adminClientDeleteBtn.addEventListener("click", deleteAdminClient);
 
-    // PDF Upload event listeners
-    document.getElementById("uploadGuidelinesBtn").addEventListener("click", () => {
-      uploadPDF("upload-guidelines", "guidelinesFileInput", "adminClientGuidelines");
+    // Modal event listeners
+    adminClientNewBtn.addEventListener("click", () => openClientModal());
+    modalCloseBtn.addEventListener("click", closeClientModal);
+    modalCancelBtn.addEventListener("click", closeClientModal);
+    modalSaveBtn.addEventListener("click", saveModalClient);
+    modalDeleteBtn.addEventListener("click", deleteModalClient);
+
+    // Close modal when clicking outside
+    clientModal.addEventListener("click", (e) => {
+      if (e.target === clientModal) {
+        closeClientModal();
+      }
     });
-    document.getElementById("uploadAcceptedBtn").addEventListener("click", () => {
-      uploadPDF("upload-accepted-examples", "acceptedFileInput", "adminClientAccepted");
+
+    // PDF Upload event listeners (modal)
+    document.getElementById("modalUploadGuidelinesBtn").addEventListener("click", () => {
+      uploadPDF("upload-guidelines", "modalGuidelinesFileInput", "modalClientGuidelines");
     });
-    document.getElementById("uploadDeniedBtn").addEventListener("click", () => {
-      uploadPDF("upload-denied-examples", "deniedFileInput", "adminClientDenied");
+    document.getElementById("modalUploadAcceptedBtn").addEventListener("click", () => {
+      uploadPDF("upload-accepted-examples", "modalAcceptedFileInput", "modalClientAccepted");
+    });
+    document.getElementById("modalUploadDeniedBtn").addEventListener("click", () => {
+      uploadPDF("upload-denied-examples", "modalDeniedFileInput", "modalClientDenied");
     });
 
     document.addEventListener("DOMContentLoaded", () => {
