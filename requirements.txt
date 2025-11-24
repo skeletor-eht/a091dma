@@ -11,3 +11,5 @@ bcrypt==3.2.2
 python-multipart
 pypdf
 python-dotenv
+pytest>=7.0
+pytest-asyncio

@@ -13,6 +13,11 @@ A production-ready FastAPI application for rewriting legal time entry narratives
 - ✅ File upload validation (size limits, type checking)
 - ✅ Input sanitization and validation
 - ✅ CORS security
+- ✅ Structured logging (JSON/colored output)
+- ✅ Request/response logging
+- ✅ Health check endpoints
+- ✅ Error tracking and reporting
+- ✅ Unit test suite
 
 ## Prerequisites
 
@@ -196,6 +201,163 @@ CORS_ORIGINS="https://yourdomain.com,https://app.yourdomain.com"
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 60 | JWT token expiration |
 | `MIN_PASSWORD_LENGTH` | 8 | Minimum password length |
 | `DEBUG` | false | Enable debug mode |
+
+## Monitoring & Logging
+
+### Structured Logging
+
+The application uses structured logging with support for both JSON (production) and colored console output (development).
+
+**Log Levels:**
+- `DEBUG`: Detailed information for debugging
+- `INFO`: General information about application operation
+- `WARNING`: Warning messages
+- `ERROR`: Error messages
+- `CRITICAL`: Critical errors
+
+**Automatic Logging:**
+- All API requests and responses (with timing)
+- Request IDs for tracing
+- Error exceptions with stack traces
+- User actions and authentication events
+
+**Log Output:**
+```bash
+# Development (colored console output)
+uvicorn main:app --reload --port 9001
+
+# Production (JSON logs to file)
+# Logs are written to app.log
+```
+
+**Example Log Entry (JSON):**
+```json
+{
+  "timestamp": "2025-01-15T10:30:45Z",
+  "level": "INFO",
+  "logger": "app.middleware",
+  "message": "Request completed: GET /health",
+  "request_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "method": "GET",
+  "path": "/health",
+  "status_code": 200,
+  "duration_ms": 15.23
+}
+```
+
+### Health Check Endpoints
+
+Monitor application health and dependencies:
+
+**Basic Health Check:**
+```bash
+curl http://localhost:9001/health
+# Response: {"status": "ok", "timestamp": "...", "version": "1.0.0", "checks": {}}
+```
+
+**Detailed Health Check:**
+```bash
+curl http://localhost:9001/health/detailed
+```
+
+Response includes:
+- Database connectivity status
+- Ollama service status
+- Response times for each service
+- Overall health status
+
+**Kubernetes-Style Probes:**
+```bash
+# Liveness probe - is the app running?
+curl http://localhost:9001/health/live
+
+# Readiness probe - can the app serve traffic?
+curl http://localhost:9001/health/ready
+```
+
+**Health Status Values:**
+- `healthy` - All systems operational
+- `degraded` - Non-critical service down (e.g., Ollama)
+- `unhealthy` - Critical service down (e.g., Database)
+
+### Error Tracking
+
+All errors are automatically tracked with:
+- Standardized error responses
+- Request ID for tracing
+- Detailed error logging
+- Validation error details
+
+**Standard Error Response:**
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "timestamp": "2025-01-15T10:30:45Z",
+    "request_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "details": {
+      "fields": [
+        {"field": "password", "message": "Password too short", "type": "value_error"}
+      ]
+    }
+  }
+}
+```
+
+### Request Tracing
+
+Every API request gets a unique `X-Request-ID` header that can be used to trace the request through logs:
+
+```bash
+# Response headers include:
+X-Request-ID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+Use this ID to search logs and track down issues.
+
+## Testing
+
+### Running Tests
+
+The application includes a comprehensive unit test suite using pytest:
+
+```bash
+# Install test dependencies
+pip install -r requirements.txt
+
+# Run all tests
+pytest
+
+# Run with verbose output
+pytest -v
+
+# Run specific test file
+pytest tests/test_auth.py
+
+# Run tests with coverage
+pytest --cov=app tests/
+```
+
+### Test Coverage
+
+Tests cover:
+- ✅ Password validation rules
+- ✅ Password hashing and verification
+- ✅ JWT token creation and decoding
+- ✅ Client ID validation
+- ✅ Text input sanitization
+- ✅ Authentication flows
+
+### Writing Tests
+
+Tests are located in the `tests/` directory. Example:
+
+```python
+def test_password_validation():
+    """Test that valid passwords pass validation."""
+    validate_password("Admin123")  # Should not raise
+```
 
 ## Database
 
