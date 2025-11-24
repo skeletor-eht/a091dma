@@ -5,18 +5,20 @@
   <title>AI Time Entry Rewrite</title>
   <style>
     :root {
-      --shell-bg: #f3f4f6;          /* page background */
+      --shell-bg: #f8f9fa;          /* page background */
       --app-bg: #ffffff;            /* main app shell */
-      --sidebar-bg: #113355;        /* left nav */
-      --sidebar-bg-hover: #0e2944;
-      --sidebar-border: #0b2036;
-      --accent: #1d75d1;
-      --accent-soft: rgba(29, 117, 209, 0.08);
-      --accent-strong: #145aa4;
-      --border-soft: #e5e7eb;
-      --text-main: #111827;
-      --text-muted: #6b7280;
-      --danger: #b91c1c;
+      --sidebar-bg: #2c3e50;        /* left nav - darker professional */
+      --sidebar-bg-hover: #34495e;
+      --sidebar-border: #1a252f;
+      --accent: #3498db;            /* brighter blue */
+      --accent-soft: rgba(52, 152, 219, 0.1);
+      --accent-strong: #2980b9;
+      --border-soft: #e1e8ed;
+      --text-main: #2c3e50;
+      --text-muted: #7f8c8d;
+      --success: #27ae60;           /* green for success */
+      --danger: #e74c3c;
+      --warning: #f39c12;
     }
 
     * {
@@ -207,23 +209,28 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 18px;
+      padding: 16px 24px;
       background: #ffffff;
       color: var(--text-main);
-      border-bottom: 1px solid var(--border-soft);
+      border-bottom: 2px solid var(--border-soft);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     .app-header-title {
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 20px;
+      font-weight: 700;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-main);
     }
 
     .app-header-title span.sub {
-      font-size: 11px;
+      font-size: 13px;
       color: var(--text-muted);
       font-weight: 400;
+      padding-left: 12px;
+      border-left: 2px solid var(--border-soft);
     }
 
     .app-user-chip {
@@ -536,16 +543,21 @@
 
     table {
       width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      color: #111827;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+      color: var(--text-main);
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     th, td {
-      border: 1px solid #e5e7eb;
-      padding: 6px 8px;
+      border-bottom: 1px solid var(--border-soft);
+      padding: 14px 16px;
       text-align: left;
-      vertical-align: top;
+      vertical-align: middle;
     }
 
     tbody tr {
@@ -553,23 +565,31 @@
     }
 
     tbody tr:hover {
-      background: #f8fafc;
+      background: #f8f9fa;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
     }
 
     th {
-      background: #f9fafb;
+      background: #f8f9fa;
       font-weight: 600;
-      font-size: 11px;
+      font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
-      color: #64748b;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border-soft);
     }
 
     .section-title {
-      font-weight: 600;
-      font-size: 13px;
-      margin-bottom: 4px;
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 16px;
       color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .pill-muted {
