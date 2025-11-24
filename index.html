@@ -2733,10 +2733,17 @@
       const hours = parseFloat(hoursInput.value || "0");
       const clientId = clientSelect.value;
 
+      console.log('=== SAVE DEBUG ===');
+      console.log('Original:', original);
+      console.log('Hours:', hours, 'Hours input value:', hoursInput.value);
+      console.log('Client ID:', clientId);
+      console.log('Selected Client ID:', selectedClientId);
+
       // Validate fields
       let hasErrors = false;
 
       if (!clientId) {
+        console.error('No client selected! ClientId:', clientId);
         statusEl.textContent = "Please select a client.";
         return;
       }
