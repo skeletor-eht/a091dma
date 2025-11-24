@@ -2216,6 +2216,10 @@
     }
 
     function validateHours(hours) {
+      // Allow empty values, they default to 0
+      if (hours === '' || hours === null || hours === undefined) {
+        return null;
+      }
       const hoursNum = parseFloat(hours);
       if (isNaN(hoursNum)) {
         return 'Hours must be a number';
@@ -2744,7 +2748,8 @@
         showFieldError(originalInput, null);
       }
 
-      const hoursError = validateHours(hoursInput.value);
+      const hoursValue = hoursInput.value || "0";
+      const hoursError = validateHours(hoursValue);
       showFieldError(hoursInput, hoursError);
       if (hoursError) {
         hasErrors = true;
@@ -2752,9 +2757,11 @@
 
       if (hasErrors) {
         statusEl.textContent = "Please fix validation errors above.";
+        console.error('Validation failed:', { original, hours, clientId });
         return;
       }
 
+      console.log('Validation passed, saving...', { original, hours, clientId });
       statusEl.textContent = "Rewriting and saving...";
       outStandard.textContent = "";
       outClient.textContent = "";
@@ -3153,7 +3160,8 @@
     function setupRealtimeValidation() {
       // Hours validation
       hoursInput.addEventListener('blur', () => {
-        const error = validateHours(hoursInput.value);
+        const hoursValue = hoursInput.value || "0";
+        const error = validateHours(hoursValue);
         showFieldError(hoursInput, error);
       });
 
