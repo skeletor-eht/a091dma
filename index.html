@@ -1164,6 +1164,345 @@
       background: var(--danger-soft);
     }
 
+    /* ---------- LOADING SPINNER ---------- */
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      animation: fadeIn 0.15s ease-out;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      position: absolute;
+      margin-top: 90px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ---------- SEARCHABLE DROPDOWN ---------- */
+
+    .searchable-dropdown {
+      position: relative;
+      width: 100%;
+    }
+
+    .searchable-dropdown input.search-input {
+      margin-top: 0;
+      cursor: pointer;
+    }
+
+    .searchable-dropdown .dropdown-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 2px solid var(--accent);
+      border-top: none;
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .searchable-dropdown .dropdown-list.active {
+      display: block;
+    }
+
+    .searchable-dropdown .dropdown-item {
+      padding: var(--space-3) var(--space-4);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+
+    .searchable-dropdown .dropdown-item:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .searchable-dropdown .dropdown-item.selected {
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .searchable-dropdown .dropdown-item.no-results {
+      color: var(--text-tertiary);
+      cursor: default;
+      font-style: italic;
+    }
+
+    .searchable-dropdown .dropdown-item.no-results:hover {
+      background: transparent;
+      color: var(--text-tertiary);
+    }
+
+    /* ---------- PAGINATION ---------- */
+
+    .pagination-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: var(--space-4);
+      padding: var(--space-4);
+      border-top: 1px solid var(--border-light);
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    .pagination-btn {
+      height: 36px;
+      min-width: 36px;
+      padding: 0 var(--space-3);
+      border: 1px solid var(--border-medium);
+      background: #ffffff;
+      color: var(--text-primary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all var(--transition-fast);
+      margin-top: 0;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+      transform: none;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background: var(--gray-100);
+      border-color: var(--border-light);
+      color: var(--text-tertiary);
+    }
+
+    .pagination-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ---------- MOBILE & TABLET RESPONSIVENESS ---------- */
+
+    @media (max-width: 1024px) {
+      /* Tablet landscape */
+      .center-wrap {
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+
+      .pane-left, .pane-right {
+        flex: 1;
+        min-width: 100%;
+      }
+
+      .grid-bottom {
+        grid-template-columns: 1fr;
+      }
+
+      .app-header {
+        padding: 0 var(--space-4);
+        height: 64px;
+      }
+
+      .app-header-title {
+        font-size: 18px;
+      }
+
+      .app-header-title span.sub {
+        display: none;
+      }
+
+      .content {
+        padding: var(--space-4);
+      }
+
+      .sidebar {
+        width: 220px;
+        padding: var(--space-4) var(--space-3);
+      }
+    }
+
+    @media (max-width: 768px) {
+      /* Tablet portrait and mobile */
+      body {
+        font-size: 14px;
+      }
+
+      .app-shell {
+        flex-direction: column;
+      }
+
+      .app-body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: var(--space-3);
+        gap: var(--space-2);
+        border-right: none;
+        border-bottom: 1px solid var(--sidebar-border);
+      }
+
+      .nav-group-label {
+        display: none;
+      }
+
+      .nav-item {
+        white-space: nowrap;
+        min-width: auto;
+      }
+
+      .sidebar-footer {
+        display: none;
+      }
+
+      .app-header {
+        height: 56px;
+        padding: 0 var(--space-3);
+      }
+
+      .app-header-title {
+        font-size: 16px;
+      }
+
+      .content {
+        padding: var(--space-3);
+      }
+
+      .pane {
+        padding: var(--space-4);
+      }
+
+      .login-card {
+        max-width: 100%;
+        padding: var(--space-6);
+      }
+
+      .login-title {
+        font-size: 24px;
+      }
+
+      .modal {
+        max-width: 95%;
+        max-height: 95vh;
+      }
+
+      .modal-body {
+        padding: var(--space-4);
+      }
+
+      .modal-header, .modal-footer {
+        padding: var(--space-4);
+      }
+
+      table {
+        font-size: 13px;
+      }
+
+      th, td {
+        padding: var(--space-3);
+      }
+
+      button {
+        height: 40px;
+        font-size: 14px;
+      }
+
+      input, select, textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+        height: 48px;
+      }
+
+      .action-btn {
+        font-size: 12px;
+        padding: var(--space-2);
+      }
+
+      .pagination-btn {
+        height: 40px;
+        min-width: 40px;
+        font-size: 13px;
+      }
+
+      .pagination-container {
+        flex-direction: column;
+        gap: var(--space-3);
+        align-items: flex-start;
+      }
+
+      .pagination-controls {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .app-user-chip {
+        font-size: 12px;
+        padding: var(--space-1) var(--space-3);
+      }
+
+      .role-pill {
+        font-size: 10px;
+        padding: 3px 8px;
+      }
+
+      .logout-link {
+        font-size: 12px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1254,10 +1593,12 @@
                 <section class="pane pane-left">
                   <div class="section-title">Time Entry</div>
 
-                  <label for="clientSelect">Client</label>
-                  <select id="clientSelect">
-                    <option value="">Loading clients...</option>
-                  </select>
+                  <label for="clientSearchInput">Client</label>
+                  <div class="searchable-dropdown" id="clientDropdown">
+                    <input type="text" id="clientSearchInput" class="search-input" placeholder="Search clients..." readonly>
+                    <div class="dropdown-list" id="clientDropdownList"></div>
+                  </div>
+                  <input type="hidden" id="clientSelect">
 
                   <label for="hours">Hours</label>
                   <input id="hours" type="number" step="0.1" value="1.5">
@@ -1396,6 +1737,15 @@
                       </tbody>
                     </table>
                   </div>
+
+                  <div class="pagination-container" id="clientsPaginationContainer" style="display: none;">
+                    <div class="pagination-info" id="clientsPaginationInfo"></div>
+                    <div class="pagination-controls">
+                      <button class="pagination-btn" id="clientsPagePrev">← Prev</button>
+                      <div id="clientsPageNumbers"></div>
+                      <button class="pagination-btn" id="clientsPageNext">Next →</button>
+                    </div>
+                  </div>
                 </section>
               </div>
             </section>
@@ -1483,6 +1833,65 @@
         </div>
       </div>
     </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="modal-overlay">
+      <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+          <div class="modal-title" id="alertModalTitle">Notice</div>
+          <button class="modal-close" id="alertModalCloseBtn">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="alertModalMessage" style="margin: 0; line-height: 1.6; color: var(--text-primary);"></p>
+        </div>
+        <div class="modal-footer">
+          <button id="alertModalOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal-overlay">
+      <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+          <div class="modal-title" id="confirmModalTitle">Confirm</div>
+          <button class="modal-close" id="confirmModalCloseBtn">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="confirmModalMessage" style="margin: 0; line-height: 1.6; color: var(--text-primary);"></p>
+        </div>
+        <div class="modal-footer">
+          <button id="confirmModalCancelBtn" class="secondary">Cancel</button>
+          <button id="confirmModalConfirmBtn">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prompt Modal -->
+    <div id="promptModal" class="modal-overlay">
+      <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+          <div class="modal-title" id="promptModalTitle">Input Required</div>
+          <button class="modal-close" id="promptModalCloseBtn">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="promptModalMessage" style="margin-bottom: var(--space-4); line-height: 1.6; color: var(--text-primary);"></p>
+          <input type="text" id="promptModalInput" style="margin-top: 0;">
+        </div>
+        <div class="modal-footer">
+          <button id="promptModalCancelBtn" class="secondary">Cancel</button>
+          <button id="promptModalOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading...</div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1505,6 +1914,9 @@
     const logoutLink = document.getElementById("logoutLink");
 
     const clientSelect = document.getElementById("clientSelect");
+    const clientSearchInput = document.getElementById("clientSearchInput");
+    const clientDropdownList = document.getElementById("clientDropdownList");
+    const clientDropdown = document.getElementById("clientDropdown");
     const hoursInput = document.getElementById("hours");
     const originalInput = document.getElementById("original");
     const rulesInput = document.getElementById("rules");
@@ -1552,6 +1964,430 @@
     const modalStatus = document.getElementById("modalStatus");
 
     let currentEditingClientId = null;
+    let allClients = [];
+    let selectedClientId = null;
+
+    // Pagination state
+    let allAdminClients = [];
+    let currentPage = 1;
+    const itemsPerPage = 50;
+
+    // ===== Searchable Dropdown Functions =====
+
+    function setupSearchableDropdown() {
+      // Toggle dropdown on input click
+      clientSearchInput.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isActive = clientDropdownList.classList.contains('active');
+        if (isActive) {
+          clientDropdownList.classList.remove('active');
+        } else {
+          clientSearchInput.readOnly = false;
+          clientSearchInput.select();
+          renderDropdownItems(allClients);
+          clientDropdownList.classList.add('active');
+        }
+      });
+
+      // Filter on input
+      clientSearchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filtered = allClients.filter(c =>
+          c.name.toLowerCase().includes(searchTerm) ||
+          c.id.toLowerCase().includes(searchTerm)
+        );
+        renderDropdownItems(filtered);
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!clientDropdown.contains(e.target)) {
+          clientDropdownList.classList.remove('active');
+          clientSearchInput.readOnly = true;
+          // Restore selected client name if there is one
+          if (selectedClientId) {
+            const client = allClients.find(c => c.id === selectedClientId);
+            if (client) {
+              clientSearchInput.value = `${client.name} (${client.id})`;
+            }
+          } else {
+            clientSearchInput.value = '';
+            clientSearchInput.placeholder = 'Search clients...';
+          }
+        }
+      });
+    }
+
+    function renderDropdownItems(clients) {
+      clientDropdownList.innerHTML = '';
+
+      if (!clients.length) {
+        const noResults = document.createElement('div');
+        noResults.className = 'dropdown-item no-results';
+        noResults.textContent = 'No clients found';
+        clientDropdownList.appendChild(noResults);
+        return;
+      }
+
+      clients.forEach(client => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        if (client.id === selectedClientId) {
+          item.classList.add('selected');
+        }
+        item.textContent = `${client.name} (${client.id})`;
+        item.dataset.clientId = client.id;
+
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectClient(client);
+        });
+
+        clientDropdownList.appendChild(item);
+      });
+    }
+
+    function selectClient(client) {
+      selectedClientId = client.id;
+      clientSelect.value = client.id;
+      clientSearchInput.value = `${client.name} (${client.id})`;
+      clientSearchInput.readOnly = true;
+      clientDropdownList.classList.remove('active');
+    }
+
+    // ===== Pagination Functions =====
+
+    function renderPaginatedClients() {
+      const totalPages = Math.ceil(allAdminClients.length / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, allAdminClients.length);
+      const pageClients = allAdminClients.slice(startIndex, endIndex);
+
+      // Render table rows
+      adminClientTableBody.innerHTML = "";
+
+      if (!allAdminClients.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="5" style="text-align: center; color: var(--text-tertiary);">No clients yet. Click "New Client" to add one.</td>`;
+        adminClientTableBody.appendChild(tr);
+        document.getElementById('clientsPaginationContainer').style.display = 'none';
+        return;
+      }
+
+      for (const c of pageClients) {
+        const tr = document.createElement("tr");
+        const guidelinesPreview = c.billing_guidelines
+          ? (c.billing_guidelines.substring(0, 50) + (c.billing_guidelines.length > 50 ? "..." : ""))
+          : "-";
+
+        tr.innerHTML = `
+          <td>${c.id}</td>
+          <td>${c.name}</td>
+          <td>${c.code || "-"}</td>
+          <td>${guidelinesPreview}</td>
+          <td>
+            <button class="action-btn" onclick="editClient('${c.id}')">✏️ Edit</button>
+            <button class="action-btn danger" onclick="deleteClient('${c.id}')">🗑️ Delete</button>
+          </td>
+        `;
+        adminClientTableBody.appendChild(tr);
+      }
+
+      // Update pagination controls
+      if (totalPages > 1) {
+        document.getElementById('clientsPaginationContainer').style.display = 'flex';
+
+        // Update info
+        const paginationInfo = document.getElementById('clientsPaginationInfo');
+        paginationInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${allAdminClients.length} clients`;
+
+        // Update buttons
+        const prevBtn = document.getElementById('clientsPagePrev');
+        const nextBtn = document.getElementById('clientsPageNext');
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+
+        // Render page numbers
+        const pageNumbersContainer = document.getElementById('clientsPageNumbers');
+        pageNumbersContainer.innerHTML = '';
+
+        // Show max 7 page numbers: 1 ... 4 5 6 ... 10
+        const maxPageButtons = 7;
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        if (currentPage <= 3) {
+          endPage = Math.min(5, totalPages);
+        }
+        if (currentPage >= totalPages - 2) {
+          startPage = Math.max(1, totalPages - 4);
+        }
+
+        if (startPage > 1) {
+          addPageButton(1);
+          if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.style.padding = '0 var(--space-2)';
+            ellipsis.style.color = 'var(--text-tertiary)';
+            pageNumbersContainer.appendChild(ellipsis);
+          }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          addPageButton(i);
+        }
+
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.style.padding = '0 var(--space-2)';
+            ellipsis.style.color = 'var(--text-tertiary)';
+            pageNumbersContainer.appendChild(ellipsis);
+          }
+          addPageButton(totalPages);
+        }
+      } else {
+        document.getElementById('clientsPaginationContainer').style.display = 'none';
+      }
+    }
+
+    function addPageButton(pageNum) {
+      const pageNumbersContainer = document.getElementById('clientsPageNumbers');
+      const btn = document.createElement('button');
+      btn.className = 'pagination-btn';
+      if (pageNum === currentPage) {
+        btn.classList.add('active');
+      }
+      btn.textContent = pageNum;
+      btn.onclick = () => {
+        currentPage = pageNum;
+        renderPaginatedClients();
+      };
+      pageNumbersContainer.appendChild(btn);
+    }
+
+    function setupPagination() {
+      document.getElementById('clientsPagePrev').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPaginatedClients();
+        }
+      });
+
+      document.getElementById('clientsPageNext').addEventListener('click', () => {
+        const totalPages = Math.ceil(allAdminClients.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderPaginatedClients();
+        }
+      });
+    }
+
+    // ===== Input Validation Functions =====
+
+    function validateRequired(value, fieldName) {
+      if (!value || value.trim() === '') {
+        return `${fieldName} is required`;
+      }
+      return null;
+    }
+
+    function validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return 'Invalid email format';
+      }
+      return null;
+    }
+
+    function validateClientId(clientId) {
+      if (!clientId) {
+        return 'Client ID is required';
+      }
+      if (clientId.length < 2 || clientId.length > 20) {
+        return 'Client ID must be between 2 and 20 characters';
+      }
+      if (!/^[A-Za-z0-9_-]+$/.test(clientId)) {
+        return 'Client ID can only contain letters, numbers, hyphens, and underscores';
+      }
+      return null;
+    }
+
+    function validateHours(hours) {
+      const hoursNum = parseFloat(hours);
+      if (isNaN(hoursNum)) {
+        return 'Hours must be a number';
+      }
+      if (hoursNum < 0) {
+        return 'Hours cannot be negative';
+      }
+      if (hoursNum > 24) {
+        return 'Hours cannot exceed 24 per entry';
+      }
+      return null;
+    }
+
+    function showFieldError(fieldElement, errorMessage) {
+      // Remove existing error
+      const existingError = fieldElement.parentElement.querySelector('.field-error');
+      if (existingError) {
+        existingError.remove();
+      }
+
+      if (errorMessage) {
+        // Add error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = errorMessage;
+        errorDiv.style.color = 'var(--danger)';
+        errorDiv.style.fontSize = '13px';
+        errorDiv.style.marginTop = 'var(--space-1)';
+        errorDiv.style.fontWeight = '500';
+        fieldElement.parentElement.insertBefore(errorDiv, fieldElement.nextSibling);
+
+        // Add error styling to field
+        fieldElement.style.borderColor = 'var(--danger)';
+      } else {
+        // Remove error styling
+        fieldElement.style.borderColor = '';
+      }
+    }
+
+    function validateForm(fields) {
+      let isValid = true;
+      fields.forEach(({ element, validator, fieldName }) => {
+        const error = validator(element.value, fieldName);
+        showFieldError(element, error);
+        if (error) {
+          isValid = false;
+        }
+      });
+      return isValid;
+    }
+
+    // ===== Loading Spinner Functions =====
+
+    function showLoading(message = 'Loading...') {
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      const loadingText = document.getElementById('loadingText');
+      loadingText.textContent = message;
+      loadingOverlay.classList.add('active');
+    }
+
+    function hideLoading() {
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      loadingOverlay.classList.remove('active');
+    }
+
+    // ===== Modern Dialog Functions =====
+
+    // Alert Dialog
+    function showAlert(message, title = 'Notice') {
+      return new Promise((resolve) => {
+        const alertModal = document.getElementById('alertModal');
+        const alertModalTitle = document.getElementById('alertModalTitle');
+        const alertModalMessage = document.getElementById('alertModalMessage');
+        const alertModalOkBtn = document.getElementById('alertModalOkBtn');
+        const alertModalCloseBtn = document.getElementById('alertModalCloseBtn');
+
+        alertModalTitle.textContent = title;
+        alertModalMessage.textContent = message;
+        alertModal.classList.add('active');
+
+        const cleanup = () => {
+          alertModal.classList.remove('active');
+          alertModalOkBtn.removeEventListener('click', handleOk);
+          alertModalCloseBtn.removeEventListener('click', handleOk);
+          resolve();
+        };
+
+        const handleOk = () => cleanup();
+
+        alertModalOkBtn.addEventListener('click', handleOk);
+        alertModalCloseBtn.addEventListener('click', handleOk);
+      });
+    }
+
+    // Confirm Dialog
+    function showConfirm(message, title = 'Confirm') {
+      return new Promise((resolve) => {
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmModalTitle = document.getElementById('confirmModalTitle');
+        const confirmModalMessage = document.getElementById('confirmModalMessage');
+        const confirmModalConfirmBtn = document.getElementById('confirmModalConfirmBtn');
+        const confirmModalCancelBtn = document.getElementById('confirmModalCancelBtn');
+        const confirmModalCloseBtn = document.getElementById('confirmModalCloseBtn');
+
+        confirmModalTitle.textContent = title;
+        confirmModalMessage.textContent = message;
+        confirmModal.classList.add('active');
+
+        const cleanup = (result) => {
+          confirmModal.classList.remove('active');
+          confirmModalConfirmBtn.removeEventListener('click', handleConfirm);
+          confirmModalCancelBtn.removeEventListener('click', handleCancel);
+          confirmModalCloseBtn.removeEventListener('click', handleCancel);
+          resolve(result);
+        };
+
+        const handleConfirm = () => cleanup(true);
+        const handleCancel = () => cleanup(false);
+
+        confirmModalConfirmBtn.addEventListener('click', handleConfirm);
+        confirmModalCancelBtn.addEventListener('click', handleCancel);
+        confirmModalCloseBtn.addEventListener('click', handleCancel);
+      });
+    }
+
+    // Prompt Dialog
+    function showPrompt(message, title = 'Input Required', defaultValue = '') {
+      return new Promise((resolve) => {
+        const promptModal = document.getElementById('promptModal');
+        const promptModalTitle = document.getElementById('promptModalTitle');
+        const promptModalMessage = document.getElementById('promptModalMessage');
+        const promptModalInput = document.getElementById('promptModalInput');
+        const promptModalOkBtn = document.getElementById('promptModalOkBtn');
+        const promptModalCancelBtn = document.getElementById('promptModalCancelBtn');
+        const promptModalCloseBtn = document.getElementById('promptModalCloseBtn');
+
+        promptModalTitle.textContent = title;
+        promptModalMessage.textContent = message;
+        promptModalInput.value = defaultValue;
+        promptModal.classList.add('active');
+
+        // Focus input after a brief delay to ensure modal is visible
+        setTimeout(() => promptModalInput.focus(), 100);
+
+        const cleanup = (result) => {
+          promptModal.classList.remove('active');
+          promptModalOkBtn.removeEventListener('click', handleOk);
+          promptModalCancelBtn.removeEventListener('click', handleCancel);
+          promptModalCloseBtn.removeEventListener('click', handleCancel);
+          promptModalInput.removeEventListener('keypress', handleKeyPress);
+          resolve(result);
+        };
+
+        const handleOk = () => {
+          const value = promptModalInput.value.trim();
+          cleanup(value || null);
+        };
+
+        const handleCancel = () => cleanup(null);
+
+        const handleKeyPress = (e) => {
+          if (e.key === 'Enter') {
+            handleOk();
+          }
+        };
+
+        promptModalOkBtn.addEventListener('click', handleOk);
+        promptModalCancelBtn.addEventListener('click', handleCancel);
+        promptModalCloseBtn.addEventListener('click', handleCancel);
+        promptModalInput.addEventListener('keypress', handleKeyPress);
+      });
+    }
 
     function buildAuthHeaders(base = {}) {
       const headers = { ...base };
@@ -1583,7 +2419,6 @@
       outClient.textContent = "";
       outAudit.textContent = "";
       outNotes.textContent = "";
-      adminClientStatus.textContent = "";
       setActiveView("rewrite");
     }
 
@@ -1624,6 +2459,7 @@
         return;
       }
 
+      showLoading('Authenticating...');
       try {
         const res = await fetch(`${API_BASE}/auth/login`, {
           method: "POST",
@@ -1660,6 +2496,8 @@
       } catch (err) {
         console.error(err);
         showLoginStatus("Login failed: " + err.message, true);
+      } finally {
+        hideLoading();
       }
     }
 
@@ -1669,21 +2507,17 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const clients = await res.json();
 
-        clientSelect.innerHTML = "";
-        clientSelect.insertAdjacentHTML(
-          "beforeend",
-          `<option value="">Select a client...</option>`
-        );
-
-        for (const c of clients) {
-          clientSelect.insertAdjacentHTML(
-            "beforeend",
-            `<option value="${c.id}">${c.name} (${c.id})</option>`
-          );
-        }
+        allClients = clients;
+        selectedClientId = null;
+        clientSelect.value = '';
+        clientSearchInput.value = '';
+        clientSearchInput.placeholder = 'Search clients...';
+        renderDropdownItems(clients);
       } catch (err) {
         console.error(err);
-        clientSelect.innerHTML = `<option value="">Error loading clients</option>`;
+        clientSearchInput.value = '';
+        clientSearchInput.placeholder = 'Error loading clients';
+        allClients = [];
       }
     }
 
@@ -1732,16 +2566,19 @@
     }
 
     async function tagRewrite(rewriteId, status) {
-      const variant = prompt('Which variant was used?\\n1. standard\\n2. client_compliant\\n3. audit_safe\\n\\nEnter 1, 2, or 3:');
+      const variant = await showPrompt(
+        'Which variant was used?\n1. standard\n2. client_compliant\n3. audit_safe\n\nEnter 1, 2, or 3:',
+        'Select Variant'
+      );
       const variantMap = {'1': 'standard', '2': 'client_compliant', '3': 'audit_safe'};
       const selectedVariant = variantMap[variant];
 
       if (!selectedVariant) {
-        alert('Invalid selection');
+        await showAlert('Invalid selection');
         return;
       }
 
-      const notes = prompt('Optional feedback notes:');
+      const notes = await showPrompt('Optional feedback notes:', 'Feedback');
 
       try {
         const res = await fetch(API_BASE + '/rewrites/' + rewriteId + '/tag', {
@@ -1760,11 +2597,14 @@
         }
 
         const result = await res.json();
-        alert('Tagged as ' + status + '! ' + (result.auto_ingested ? 'Auto-ingested into client examples.' : ''));
+        await showAlert(
+          'Tagged as ' + status + '! ' + (result.auto_ingested ? 'Auto-ingested into client examples.' : ''),
+          'Success'
+        );
         loadRecentEntries();
       } catch (err) {
         console.error(err);
-        alert('Failed to tag rewrite: ' + err.message);
+        await showAlert('Failed to tag rewrite: ' + err.message, 'Error');
       }
     }
 
@@ -1773,6 +2613,7 @@
         return;
       }
 
+      showLoading('Loading audit log...');
       try {
         const res = await fetch(`${API_BASE}/admin/audit-events?limit=50`, {
           headers: buildAuthHeaders(),
@@ -1811,6 +2652,8 @@
       } catch (err) {
         console.error(err);
         auditTableBody.innerHTML = `<tr><td colspan="3" class="badge-danger">Error loading audit log: ${err.message}</td></tr>`;
+      } finally {
+        hideLoading();
       }
     }
 
@@ -1845,6 +2688,7 @@
       outAudit.textContent = "";
       outNotes.textContent = "";
 
+      showLoading('Rewriting narrative...');
       try {
         const res = await fetch(`${API_BASE}/rewrites/rewrite`, {
           method: "POST",
@@ -1870,6 +2714,8 @@
       } catch (err) {
         console.error(err);
         statusEl.textContent = "Error: " + err.message;
+      } finally {
+        hideLoading();
       }
     }
 
@@ -1883,12 +2729,29 @@
       const hours = parseFloat(hoursInput.value || "0");
       const clientId = clientSelect.value;
 
+      // Validate fields
+      let hasErrors = false;
+
       if (!clientId) {
         statusEl.textContent = "Please select a client.";
         return;
       }
+
       if (!original) {
-        statusEl.textContent = "Please enter an original narrative.";
+        showFieldError(originalInput, 'Original narrative is required');
+        hasErrors = true;
+      } else {
+        showFieldError(originalInput, null);
+      }
+
+      const hoursError = validateHours(hoursInput.value);
+      showFieldError(hoursInput, hoursError);
+      if (hoursError) {
+        hasErrors = true;
+      }
+
+      if (hasErrors) {
+        statusEl.textContent = "Please fix validation errors above.";
         return;
       }
 
@@ -1898,6 +2761,7 @@
       outAudit.textContent = "";
       outNotes.textContent = "";
 
+      showLoading('Rewriting and saving...');
       try {
         const res = await fetch(`${API_BASE}/rewrites/rewrite-and-save`, {
           method: "POST",
@@ -1924,6 +2788,8 @@
       } catch (err) {
         console.error(err);
         statusEl.textContent = "Error: " + err.message;
+      } finally {
+        hideLoading();
       }
     }
 
@@ -1979,36 +2845,13 @@
         }
 
         const clients = await res.json();
-        adminClientTableBody.innerHTML = "";
-
-        if (!clients.length) {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td colspan="5" style="text-align: center; color: var(--text-tertiary);">No clients yet. Click "New Client" to add one.</td>`;
-          adminClientTableBody.appendChild(tr);
-          return;
-        }
-
-        for (const c of clients) {
-          const tr = document.createElement("tr");
-          const guidelinesPreview = c.billing_guidelines
-            ? (c.billing_guidelines.substring(0, 50) + (c.billing_guidelines.length > 50 ? "..." : ""))
-            : "-";
-
-          tr.innerHTML = `
-            <td>${c.id}</td>
-            <td>${c.name}</td>
-            <td>${c.code || "-"}</td>
-            <td>${guidelinesPreview}</td>
-            <td>
-              <button class="action-btn" onclick="editClient('${c.id}')">✏️ Edit</button>
-              <button class="action-btn danger" onclick="deleteClient('${c.id}')">🗑️ Delete</button>
-            </td>
-          `;
-          adminClientTableBody.appendChild(tr);
-        }
+        allAdminClients = clients;
+        currentPage = 1;
+        renderPaginatedClients();
       } catch (err) {
         console.error(err);
         adminClientTableBody.innerHTML = `<tr><td colspan="5">Error loading clients: ${err.message}</td></tr>`;
+        document.getElementById('clientsPaginationContainer').style.display = 'none';
       }
     }
 
@@ -2024,12 +2867,17 @@
         }
       } catch (err) {
         console.error(err);
-        alert("Error loading client: " + err.message);
+        await showAlert("Error loading client: " + err.message, 'Error');
       }
     }
 
     async function deleteClient(clientId) {
-      if (!confirm(`Delete client ${clientId}? This cannot be undone.`)) {
+      const confirmed = await showConfirm(
+        `Delete client ${clientId}? This cannot be undone.`,
+        'Delete Client'
+      );
+
+      if (!confirmed) {
         return;
       }
 
@@ -2044,12 +2892,12 @@
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
 
-        alert("Client deleted successfully");
+        await showAlert("Client deleted successfully", 'Success');
         loadClients();
         loadAdminClients();
       } catch (err) {
         console.error(err);
-        alert("Error deleting client: " + err.message);
+        await showAlert("Error deleting client: " + err.message, 'Error');
       }
     }
 
@@ -2066,8 +2914,14 @@
       const accepted = modalClientAcceptedInput.value.trim();
       const denied = modalClientDeniedInput.value.trim();
 
-      if (!id || !name) {
-        modalStatus.textContent = "Client ID and Name are required.";
+      // Validate fields
+      const isValid = validateForm([
+        { element: modalClientIdInput, validator: validateClientId, fieldName: 'Client ID' },
+        { element: modalClientNameInput, validator: validateRequired, fieldName: 'Client Name' }
+      ]);
+
+      if (!isValid) {
+        modalStatus.textContent = "Please fix validation errors above.";
         return;
       }
 
@@ -2079,9 +2933,9 @@
         denied_examples: denied || null,
       };
 
+      modalStatus.textContent = "Saving client...";
+      showLoading('Saving client...');
       try {
-        modalStatus.textContent = "Saving client...";
-
         let res;
         if (currentEditingClientId) {
           // Update existing client
@@ -2122,6 +2976,8 @@
       } catch (err) {
         console.error(err);
         modalStatus.textContent = "Error: " + err.message;
+      } finally {
+        hideLoading();
       }
     }
 
@@ -2130,7 +2986,12 @@
         return;
       }
 
-      if (!confirm(`Delete client ${currentEditingClientId}? This cannot be undone.`)) {
+      const confirmed = await showConfirm(
+        `Delete client ${currentEditingClientId}? This cannot be undone.`,
+        'Delete Client'
+      );
+
+      if (!confirmed) {
         return;
       }
 
@@ -2161,6 +3022,7 @@
     // Make functions globally accessible for onclick handlers
     window.editClient = editClient;
     window.deleteClient = deleteClient;
+    window.tagRewrite = tagRewrite;
 
     // ===== PDF Upload Functions =====
 
@@ -2192,9 +3054,9 @@
       const formData = new FormData();
       formData.append('file', file);
 
+      modalStatus.textContent = `Uploading ${file.name} and extracting text...`;
+      showLoading('Uploading and extracting PDF...');
       try {
-        modalStatus.textContent = `Uploading ${file.name} and extracting text...`;
-
         const res = await fetch(`${API_BASE}/admin/clients/${encodeURIComponent(clientId)}/${endpoint}`, {
           method: 'POST',
           headers: buildAuthHeaders(),
@@ -2233,6 +3095,8 @@
       } catch (err) {
         console.error(err);
         modalStatus.textContent = "Error uploading PDF: " + err.message;
+      } finally {
+        hideLoading();
       }
     }
 
@@ -2285,8 +3149,43 @@
       uploadPDF("upload-denied-examples", "modalDeniedFileInput", "modalClientDenied");
     });
 
+    // Setup real-time validation
+    function setupRealtimeValidation() {
+      // Hours validation
+      hoursInput.addEventListener('blur', () => {
+        const error = validateHours(hoursInput.value);
+        showFieldError(hoursInput, error);
+      });
+
+      // Client modal validation
+      modalClientIdInput.addEventListener('blur', () => {
+        if (!currentEditingClientId) { // Only validate ID when creating
+          const error = validateClientId(modalClientIdInput.value);
+          showFieldError(modalClientIdInput, error);
+        }
+      });
+
+      modalClientNameInput.addEventListener('blur', () => {
+        const error = validateRequired(modalClientNameInput.value, 'Client Name');
+        showFieldError(modalClientNameInput, error);
+      });
+
+      // Clear errors on input
+      [hoursInput, modalClientIdInput, modalClientNameInput, originalInput].forEach(input => {
+        input.addEventListener('input', () => {
+          // Only clear error if there is one
+          const existingError = input.parentElement.querySelector('.field-error');
+          if (existingError) {
+            showFieldError(input, null);
+          }
+        });
+      });
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
-      // load after login
+      setupSearchableDropdown();
+      setupPagination();
+      setupRealtimeValidation();
     });
   </script>
 </body>
