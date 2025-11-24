@@ -114,3 +114,21 @@ class AuditEntryOut(BaseModel):
     client_compliant: str
     audit_safe: str
     notes: str
+
+
+# --------- Rewrite Tagging ---------
+
+
+class RewriteTagRequest(BaseModel):
+    status: str  # "success", "failure", or "not_submitted"
+    selected_variant: Optional[str] = None  # "standard", "client_compliant", "audit_safe"
+    feedback_notes: Optional[str] = None
+
+
+class RewriteTagResponse(BaseModel):
+    rewrite_id: str
+    status: str
+    selected_variant: Optional[str] = None
+    feedback_date: datetime
+    feedback_notes: Optional[str] = None
+    auto_ingested: bool

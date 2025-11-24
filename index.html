@@ -671,6 +671,75 @@
       background: var(--border-soft);
       margin: 12px 0;
     }
+    /* ---------- TAGGING BADGES & BUTTONS ---------- */
+
+    .badge-success {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #10b981;
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+
+    .badge-failure {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #ef4444;
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+
+    .badge-pending {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #6b7280;
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+
+    .btn-tag {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      margin-right: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-tag:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-failure {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-failure:hover {
+      background: #dc2626;
+    }
+
   </style>
 </head>
 <body>
@@ -821,6 +890,7 @@
                             <th>Client</th>
                             <th>Standard Rewrite</th>
                             <th>Notes</th>
+                            <th>Status</th>
                           </tr>
                         </thead>
                         <tbody id="recentTableBody">
@@ -1177,22 +1247,76 @@
 
         recentTableBody.innerHTML = "";
         if (!rows.length) {
-          recentTableBody.innerHTML = `<tr><td colspan="3">No saved entries yet.</td></tr>`;
+          recentTableBody.innerHTML = `<tr><td colspan="4">No saved entries yet.</td></tr>`;
           return;
         }
 
         for (const row of rows) {
           const tr = document.createElement("tr");
+          const statusBadge = getStatusBadge(row.rewrite.status || "not_submitted");
+          const buttons = row.rewrite.status === "not_submitted"
+            ? `<button onclick="tagRewrite('${row.rewrite_id}', 'success')" class="btn-tag btn-success">✓</button>
+               <button onclick="tagRewrite('${row.rewrite_id}', 'failure')" class="btn-tag btn-failure">✗</button>`
+            : '';
+
           tr.innerHTML = `
             <td>${row.client.name}</td>
             <td>${row.rewrite.standard || ""}</td>
             <td>${row.rewrite.notes || ""}</td>
+            <td>${statusBadge} ${buttons}</td>
           `;
           recentTableBody.appendChild(tr);
         }
       } catch (err) {
         console.error(err);
-        recentTableBody.innerHTML = `<tr><td colspan="3">Error loading recent entries</td></tr>`;
+        recentTableBody.innerHTML = `<tr><td colspan="4">Error loading recent entries</td></tr>`;
+      }
+    }
+
+    function getStatusBadge(status) {
+      if (status === "success") {
+        return '<span class="badge-success">✓ Success</span>';
+      } else if (status === "failure") {
+        return '<span class="badge-failure">✗ Failure</span>';
+      } else {
+        return '<span class="badge-pending">○ Not Submitted</span>';
+      }
+    }
+
+    async function tagRewrite(rewriteId, status) {
+      const variant = prompt('Which variant was used?\\n1. standard\\n2. client_compliant\\n3. audit_safe\\n\\nEnter 1, 2, or 3:');
+      const variantMap = {'1': 'standard', '2': 'client_compliant', '3': 'audit_safe'};
+      const selectedVariant = variantMap[variant];
+
+      if (!selectedVariant) {
+        alert('Invalid selection');
+        return;
+      }
+
+      const notes = prompt('Optional feedback notes:');
+
+      try {
+        const res = await fetch(API_BASE + '/rewrites/' + rewriteId + '/tag', {
+          method: 'PATCH',
+          headers: buildAuthHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            status: status,
+            selected_variant: selectedVariant,
+            feedback_notes: notes || undefined
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error ? err.error.message : 'HTTP ' + res.status);
+        }
+
+        const result = await res.json();
+        alert('Tagged as ' + status + '! ' + (result.auto_ingested ? 'Auto-ingested into client examples.' : ''));
+        loadRecentEntries();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to tag rewrite: ' + err.message);
       }
     }
 

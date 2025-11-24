@@ -21,6 +21,8 @@ from ..schemas import (
     RewriteResponse,
     RewriteAndSaveRequest,
     SavedRewriteResponse,
+    RewriteTagRequest,
+    RewriteTagResponse,
 )
 from ..config import settings
 
@@ -203,4 +205,108 @@ def recent_time_entries(
         total=total,
         page=page,
         page_size=page_size
+    )
+
+
+@router.patch("/{rewrite_id}/tag", response_model=RewriteTagResponse)
+async def tag_rewrite(
+    rewrite_id: str,
+    payload: RewriteTagRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """
+    Tag a rewrite with success/failure status and auto-ingest into client examples.
+    """
+    # Validate status
+    valid_statuses = ["success", "failure", "not_submitted"]
+    if payload.status not in valid_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}",
+        )
+
+    # Validate selected_variant if provided
+    valid_variants = ["standard", "client_compliant", "audit_safe"]
+    if payload.selected_variant and payload.selected_variant not in valid_variants:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid variant. Must be one of: {', '.join(valid_variants)}",
+        )
+
+    # Get the rewrite
+    rewrite = db.query(RewriteRecord).filter(RewriteRecord.id == rewrite_id).first()
+    if not rewrite:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Rewrite not found",
+        )
+
+    # Get the associated time entry and client
+    time_entry = db.query(TimeEntry).filter(TimeEntry.id == rewrite.time_entry_id).first()
+    if not time_entry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Associated time entry not found",
+        )
+
+    client = db.query(Client).filter(Client.id == time_entry.client_id).first()
+    if not client:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Associated client not found",
+        )
+
+    # Update the rewrite with feedback
+    rewrite.status = payload.status
+    rewrite.selected_variant = payload.selected_variant
+    rewrite.feedback_date = datetime.utcnow()
+    rewrite.feedback_notes = payload.feedback_notes
+
+    auto_ingested = False
+
+    # Auto-ingest into client examples based on status
+    if payload.status == "success" and payload.selected_variant:
+        variant_text = getattr(rewrite, payload.selected_variant)
+        example_entry = f"""
+=== SUCCESS EXAMPLE (Auto-ingested {datetime.utcnow().strftime('%Y-%m-%d')}) ===
+Original: {time_entry.original} ({time_entry.hours} hours)
+Approved Rewrite: {variant_text}
+Variant Used: {payload.selected_variant}
+Notes: {payload.feedback_notes or 'None'}
+---
+"""
+        if client.accepted_examples:
+            client.accepted_examples += example_entry
+        else:
+            client.accepted_examples = example_entry
+        auto_ingested = True
+
+    elif payload.status == "failure" and payload.selected_variant:
+        variant_text = getattr(rewrite, payload.selected_variant)
+        example_entry = f"""
+=== FAILURE EXAMPLE (Auto-ingested {datetime.utcnow().strftime('%Y-%m-%d')}) ===
+Original: {time_entry.original} ({time_entry.hours} hours)
+Rejected Rewrite: {variant_text}
+Variant Used: {payload.selected_variant}
+Reason: {payload.feedback_notes or 'Not specified'}
+---
+"""
+        if client.denied_examples:
+            client.denied_examples += example_entry
+        else:
+            client.denied_examples = example_entry
+        auto_ingested = True
+
+    # Commit all changes
+    db.commit()
+    db.refresh(rewrite)
+
+    return RewriteTagResponse(
+        rewrite_id=rewrite.id,
+        status=rewrite.status,
+        selected_variant=rewrite.selected_variant,
+        feedback_date=rewrite.feedback_date,
+        feedback_notes=rewrite.feedback_notes,
+        auto_ingested=auto_ingested,
     )

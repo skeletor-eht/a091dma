@@ -68,6 +68,12 @@ class RewriteRecord(Base):
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    # Tagging/feedback fields for continuous learning
+    status = Column(String, nullable=True, default="not_submitted")
+    selected_variant = Column(String, nullable=True)
+    feedback_date = Column(DateTime, nullable=True)
+    feedback_notes = Column(Text, nullable=True)
+
     time_entry = relationship("TimeEntry", back_populates="rewrites")
 
 
